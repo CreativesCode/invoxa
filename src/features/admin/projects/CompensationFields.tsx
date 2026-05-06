@@ -4,10 +4,10 @@ import { Select } from '../../../components/ui/Select'
 import { CURRENCIES } from './memberSchema'
 
 type AnyValues = {
-  payment_type: 'hourly' | 'fixed'
+  payment_type?: 'hourly' | 'fixed'
   hourly_rate?: number
   monthly_rate?: number
-  currency: string
+  currency?: string
 }
 
 function numberOrUndefined(v: unknown): number | undefined {

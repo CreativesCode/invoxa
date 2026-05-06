@@ -51,7 +51,7 @@ export function useProjectTasks(
         .order('task_date', { ascending: false })
 
       if (error) throw error
-      const tasks = (data ?? []) as ProjectTaskWithUser[]
+      const tasks = (data ?? []) as unknown as ProjectTaskWithUser[]
       const totalHours = tasks.reduce((sum, t) => sum + Number(t.hours), 0)
       const uniqueUsers = new Set(tasks.map((t) => t.user_id)).size
       return { tasks, totalHours, uniqueUsers }
