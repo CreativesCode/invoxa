@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Geist', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: #fbf7f0;
+    color: #2a1f17;
+    font-feature-settings: 'ss01', 'cv11';
+    /* Respect notches / Dynamic Island when running inside Capacitor. The
+       AppShell takes the full viewport, so push its top by the safe-area
+       inset using a CSS variable consumed below. */
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    overscroll-behavior-y: none;
+  }
+
+  /* Disable text selection callouts and tap highlights on native shells. */
+  html.capacitor-native body {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+  /* But keep selection enabled inside form fields and the actual content. */
+  html.capacitor-native input,
+  html.capacitor-native textarea,
+  html.capacitor-native [contenteditable='true'] {
+    user-select: text;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Fraunces', 'Instrument Serif', Georgia, serif;
+    font-optical-sizing: auto;
+    letter-spacing: -0.02em;
+  }
+  .font-mono {
+    font-family: 'Geist Mono', ui-monospace, monospace;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #d4c8ad;
+    border-radius: 999px;
+    border: 2px solid #fbf7f0;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #a89980;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+}

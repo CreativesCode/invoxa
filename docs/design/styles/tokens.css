@@ -1,0 +1,175 @@
+/* Invoxa — design tokens
+   Warm/human aesthetic: earth tones, soft serif headlines, sans-serif UI.
+   Light + dark, three accent palettes, three densities.
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Instrument+Serif&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Type */
+  --font-display: 'Fraunces', 'Instrument Serif', Georgia, serif;
+  --font-ui: 'Geist', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'JetBrains Mono', monospace;
+
+  /* Light theme — warm cream + deep brown */
+  --bg: #fbf7f0;
+  --bg-elev: #ffffff;
+  --bg-sunken: #f4ede0;
+  --bg-muted: #efe7d6;
+  --line: #e6dcc6;
+  --line-strong: #d4c8ad;
+
+  --ink: #2a1f17;
+  --ink-2: #4a3a2c;
+  --ink-3: #7a6a58;
+  --ink-4: #a89980;
+  --ink-inverse: #fbf7f0;
+
+  /* Accent — terracotta default */
+  --accent: #c2410c;
+  --accent-hover: #a8370a;
+  --accent-soft: #f4d9c5;
+  --accent-ink: #ffffff;
+
+  /* Status */
+  --success: #4a7c4e;
+  --success-soft: #d8e4d4;
+  --warn: #b6862c;
+  --warn-soft: #f3e4c1;
+  --danger: #a14040;
+  --danger-soft: #efd2cb;
+  --info: #4a6a7c;
+  --info-soft: #d0dde4;
+
+  /* Geometry */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* Density (overridden by data-density) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 56px;
+
+  --row-h: 56px;
+  --field-h: 44px;
+
+  /* Shadows */
+  --shadow-1: 0 1px 2px rgba(42, 31, 23, 0.06), 0 1px 0 rgba(42, 31, 23, 0.03);
+  --shadow-2: 0 4px 12px rgba(42, 31, 23, 0.08), 0 1px 2px rgba(42, 31, 23, 0.04);
+  --shadow-3: 0 18px 48px rgba(42, 31, 23, 0.18), 0 4px 14px rgba(42, 31, 23, 0.08);
+}
+
+/* Accent variants */
+[data-accent="terracotta"] {
+  --accent: #c2410c;
+  --accent-hover: #a8370a;
+  --accent-soft: #f4d9c5;
+}
+[data-accent="ochre"] {
+  --accent: #b08020;
+  --accent-hover: #946a17;
+  --accent-soft: #f1e3bf;
+}
+[data-accent="forest"] {
+  --accent: #3f6b4a;
+  --accent-hover: #335840;
+  --accent-soft: #d6e3d6;
+}
+[data-accent="ink"] {
+  --accent: #2a1f17;
+  --accent-hover: #1a120c;
+  --accent-soft: #e6dcc6;
+}
+
+/* Density */
+[data-density="cozy"] {
+  --space-3: 10px;
+  --space-4: 14px;
+  --space-5: 18px;
+  --space-6: 22px;
+  --row-h: 52px;
+  --field-h: 42px;
+}
+[data-density="compact"] {
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-5: 14px;
+  --space-6: 18px;
+  --row-h: 44px;
+  --field-h: 36px;
+}
+
+/* Dark mode */
+[data-theme="dark"] {
+  --bg: #1a1410;
+  --bg-elev: #221a14;
+  --bg-sunken: #14100c;
+  --bg-muted: #2a2018;
+  --line: #3a2c20;
+  --line-strong: #4a3828;
+
+  --ink: #f4ede0;
+  --ink-2: #d8c9b2;
+  --ink-3: #a89980;
+  --ink-4: #7a6a58;
+  --ink-inverse: #1a1410;
+
+  --accent-soft: #4a2a18;
+  --success-soft: #1f3320;
+  --warn-soft: #3a2e18;
+  --danger-soft: #3a1f1f;
+  --info-soft: #1f2c33;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(0, 0, 0, 0.2);
+  --shadow-2: 0 6px 18px rgba(0, 0, 0, 0.45), 0 2px 4px rgba(0, 0, 0, 0.25);
+  --shadow-3: 0 24px 60px rgba(0, 0, 0, 0.55), 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"][data-accent="terracotta"] { --accent: #db5a1e; --accent-hover: #e26a30; }
+[data-theme="dark"][data-accent="ochre"] { --accent: #d29b3a; --accent-hover: #e0ac4d; }
+[data-theme="dark"][data-accent="forest"] { --accent: #6aa07a; --accent-hover: #79b089; }
+[data-theme="dark"][data-accent="ink"] { --accent: #f4ede0; --accent-hover: #ffffff; --accent-ink: #1a1410; }
+
+/* Base */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'ss01', 'cv11';
+}
+
+/* Common type ramp */
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.serif {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-optical-sizing: auto;
+}
+.mono { font-family: var(--font-mono); font-feature-settings: 'tnum'; }
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 999px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-4); }

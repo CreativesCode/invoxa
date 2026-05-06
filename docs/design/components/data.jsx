@@ -1,0 +1,182 @@
+// i18n strings — es / en
+const STR = {
+  es: {
+    appName: 'invoxa',
+    tagline: 'Facturación interna · Informage Studios',
+    // Auth
+    signIn: 'Iniciar sesión', signOut: 'Cerrar sesión', email: 'Correo electrónico',
+    password: 'Contraseña', forgotPassword: '¿Olvidaste tu contraseña?',
+    welcomeBack: 'Bienvenido de vuelta', signInSub: 'Ingresa con tu correo corporativo',
+    acceptInvite: 'Aceptar invitación', acceptInviteSub: 'Has sido invitado a colaborar con',
+    fullName: 'Nombre completo', createAccount: 'Crear cuenta',
+    setPassword: 'Establecer contraseña', resetSent: 'Te enviamos un enlace al correo',
+    sendResetLink: 'Enviar enlace', backToLogin: 'Volver al inicio',
+    // Nav
+    home: 'Inicio', users: 'Usuarios', projects: 'Proyectos', invoices: 'Facturas',
+    requests: 'Solicitudes', tasks: 'Tareas', billing: 'Facturación',
+    profile: 'Perfil', dashboard: 'Tablero', changeRequests: 'Cambios consecutivo',
+    // Admin dashboard
+    monthlyOverview: 'Resumen del mes', activeUsers: 'Usuarios activos',
+    invoicesPending: 'Facturas pendientes', invoicesGenerated: 'Facturas generadas',
+    invoicesPaid: 'Facturas pagadas', requestAll: 'Solicitar todas las facturas',
+    requestIndividual: 'Solicitar individual', recentActivity: 'Actividad reciente',
+    upcomingDeadline: 'Cierre del mes',
+    // Users
+    inviteUser: 'Invitar usuario', allUsers: 'Todos los usuarios',
+    userCode: 'Código de usuario', paymentType: 'Modalidad de pago',
+    hourly: 'Por hora', fixed: 'Fijo mensual', rate: 'Tarifa', currency: 'Moneda',
+    project: 'Proyecto', status: 'Estado', active: 'Activo', inactive: 'Inactivo',
+    invited: 'Invitado',
+    // Projects
+    newProject: 'Nuevo proyecto', members: 'Colaboradores', addMember: 'Añadir colaborador',
+    projectDetails: 'Detalles del proyecto', tasksLogged: 'Tareas registradas',
+    hoursLogged: 'Horas registradas', invoicedAmount: 'Total facturado',
+    // Invoices
+    newInvoice: 'Nueva factura', generateInvoice: 'Generar factura',
+    invoiceNumber: 'Número de factura', period: 'Periodo', amount: 'Monto',
+    download: 'Descargar', viewPdf: 'Ver PDF',
+    statusDraft: 'Borrador', statusGenerated: 'Generada', statusSent: 'Enviada',
+    statusReviewed: 'Revisada', statusApproved: 'Aprobada', statusRejected: 'Rechazada',
+    statusPaid: 'Pagada', statusCancelled: 'Anulada',
+    // Generate flow
+    selectPeriod: 'Selecciona el periodo', includedProjects: 'Proyectos incluidos',
+    breakdown: 'Desglose', subtotal: 'Subtotal', taxes: 'Impuestos', total: 'Total',
+    notes: 'Observaciones', addNotes: 'Añadir observaciones (opcional)',
+    confirmGenerate: 'Confirmar y generar',
+    // Tasks
+    newTask: 'Nueva tarea', taskName: 'Nombre de la tarea',
+    description: 'Descripción', date: 'Fecha', hours: 'Horas',
+    saveTask: 'Guardar tarea', tasksThisMonth: 'Tareas del mes',
+    totalHours: 'Total de horas',
+    // Number change
+    requestNumberChange: 'Solicitar cambio de número',
+    proposedNumber: 'Número propuesto', reason: 'Motivo',
+    sendRequest: 'Enviar solicitud', current: 'Actual', proposed: 'Propuesto',
+    pending: 'Pendiente', approved: 'Aprobada', rejected: 'Rechazada', applied: 'Aplicada',
+    approve: 'Aprobar', reject: 'Rechazar',
+    // Billing profile
+    billingProfile: 'Perfil de facturación', legalName: 'Nombre o razón social',
+    taxId: 'Documento / NIT', address: 'Dirección', city: 'Ciudad', country: 'País',
+    bankName: 'Banco', bankAccount: 'Cuenta bancaria',
+    paymentMethod: 'Método de pago', defaultNotes: 'Observaciones por defecto',
+    save: 'Guardar', cancel: 'Cancelar',
+    // Common
+    search: 'Buscar', filter: 'Filtrar', month: 'Mes', year: 'Año',
+    all: 'Todos', selected: 'seleccionados',
+  },
+  en: {
+    appName: 'invoxa',
+    tagline: 'Internal billing · Informage Studios',
+    signIn: 'Sign in', signOut: 'Sign out', email: 'Email',
+    password: 'Password', forgotPassword: 'Forgot your password?',
+    welcomeBack: 'Welcome back', signInSub: 'Sign in with your work email',
+    acceptInvite: 'Accept invitation', acceptInviteSub: 'You\'ve been invited to collaborate with',
+    fullName: 'Full name', createAccount: 'Create account',
+    setPassword: 'Set password', resetSent: 'We sent a link to your email',
+    sendResetLink: 'Send reset link', backToLogin: 'Back to sign in',
+    home: 'Home', users: 'Users', projects: 'Projects', invoices: 'Invoices',
+    requests: 'Requests', tasks: 'Tasks', billing: 'Billing',
+    profile: 'Profile', dashboard: 'Dashboard', changeRequests: 'Number changes',
+    monthlyOverview: 'Monthly overview', activeUsers: 'Active users',
+    invoicesPending: 'Pending invoices', invoicesGenerated: 'Generated invoices',
+    invoicesPaid: 'Paid invoices', requestAll: 'Request all invoices',
+    requestIndividual: 'Request individual', recentActivity: 'Recent activity',
+    upcomingDeadline: 'Month-end',
+    inviteUser: 'Invite user', allUsers: 'All users',
+    userCode: 'User code', paymentType: 'Payment type',
+    hourly: 'Hourly', fixed: 'Fixed monthly', rate: 'Rate', currency: 'Currency',
+    project: 'Project', status: 'Status', active: 'Active', inactive: 'Inactive',
+    invited: 'Invited',
+    newProject: 'New project', members: 'Members', addMember: 'Add member',
+    projectDetails: 'Project details', tasksLogged: 'Tasks logged',
+    hoursLogged: 'Hours logged', invoicedAmount: 'Total invoiced',
+    newInvoice: 'New invoice', generateInvoice: 'Generate invoice',
+    invoiceNumber: 'Invoice number', period: 'Period', amount: 'Amount',
+    download: 'Download', viewPdf: 'View PDF',
+    statusDraft: 'Draft', statusGenerated: 'Generated', statusSent: 'Sent',
+    statusReviewed: 'Reviewed', statusApproved: 'Approved', statusRejected: 'Rejected',
+    statusPaid: 'Paid', statusCancelled: 'Cancelled',
+    selectPeriod: 'Select period', includedProjects: 'Included projects',
+    breakdown: 'Breakdown', subtotal: 'Subtotal', taxes: 'Taxes', total: 'Total',
+    notes: 'Notes', addNotes: 'Add notes (optional)',
+    confirmGenerate: 'Confirm & generate',
+    newTask: 'New task', taskName: 'Task name',
+    description: 'Description', date: 'Date', hours: 'Hours',
+    saveTask: 'Save task', tasksThisMonth: 'Tasks this month',
+    totalHours: 'Total hours',
+    requestNumberChange: 'Request number change',
+    proposedNumber: 'Proposed number', reason: 'Reason',
+    sendRequest: 'Send request', current: 'Current', proposed: 'Proposed',
+    pending: 'Pending', approved: 'Approved', rejected: 'Rejected', applied: 'Applied',
+    approve: 'Approve', reject: 'Reject',
+    billingProfile: 'Billing profile', legalName: 'Legal name',
+    taxId: 'Tax ID', address: 'Address', city: 'City', country: 'Country',
+    bankName: 'Bank', bankAccount: 'Bank account',
+    paymentMethod: 'Payment method', defaultNotes: 'Default notes',
+    save: 'Save', cancel: 'Cancel',
+    search: 'Search', filter: 'Filter', month: 'Month', year: 'Year',
+    all: 'All', selected: 'selected',
+  },
+};
+
+// Sample data
+const SAMPLE = {
+  currentUser: {
+    id: 'u1', name: 'Ricardo Castaño', email: 'ricardo@informagestudios.com',
+    code: 'RCA', role: 'user',
+  },
+  admin: {
+    id: 'a1', name: 'María Acosta', email: 'maria@informagestudios.com', role: 'admin',
+  },
+  users: [
+    { id: 'u1', name: 'Ricardo Castaño', email: 'ricardo@informagestudios.com', code: 'RCA', status: 'active', projects: 2, type: 'mixed', invoiced: 2000 },
+    { id: 'u2', name: 'Laura Mejía', email: 'laura@informagestudios.com', code: 'LMJ', status: 'active', projects: 1, type: 'hourly', invoiced: 1700 },
+    { id: 'u3', name: 'Diego Restrepo', email: 'diego@informagestudios.com', code: 'DRE', status: 'active', projects: 1, type: 'fixed', invoiced: 2500 },
+    { id: 'u4', name: 'Sofía Henao', email: 'sofia@informagestudios.com', code: 'SHE', status: 'invited', projects: 0, type: '—', invoiced: 0 },
+    { id: 'u5', name: 'Andrés Vélez', email: 'andres@informagestudios.com', code: 'AVE', status: 'active', projects: 2, type: 'hourly', invoiced: 1840 },
+    { id: 'u6', name: 'Camila Ortiz', email: 'camila@informagestudios.com', code: 'COR', status: 'active', projects: 1, type: 'fixed', invoiced: 3200 },
+    { id: 'u7', name: 'Javier Pérez', email: 'javier@informagestudios.com', code: 'JPR', status: 'inactive', projects: 0, type: '—', invoiced: 0 },
+  ],
+  projects: [
+    { id: 'p1', name: 'Atlas Banking', desc: 'Aplicación bancaria móvil · iOS + Android', members: 6, status: 'active', hours: 412 },
+    { id: 'p2', name: 'Helio Health', desc: 'Plataforma de telemedicina B2B', members: 4, status: 'active', hours: 280 },
+    { id: 'p3', name: 'Ronda Coffee', desc: 'E-commerce especialidad colombiano', members: 3, status: 'active', hours: 156 },
+    { id: 'p4', name: 'Verdana Real Estate', desc: 'CRM para corredores inmobiliarios', members: 2, status: 'active', hours: 98 },
+    { id: 'p5', name: 'Numen Books', desc: 'Lector EPUB con anotaciones colaborativas', members: 1, status: 'inactive', hours: 0 },
+  ],
+  tasks: [
+    { id: 't1', name: 'Onboarding flow — pantalla 3', project: 'Atlas Banking', date: '2026-04-28', hours: 4.5, invoiced: false },
+    { id: 't2', name: 'Revisión de componentes de tabla', project: 'Atlas Banking', date: '2026-04-27', hours: 3, invoiced: false },
+    { id: 't3', name: 'Diseño visual — marketing site', project: 'Helio Health', date: '2026-04-26', hours: 6, invoiced: false },
+    { id: 't4', name: 'Iconografía custom (12 iconos)', project: 'Helio Health', date: '2026-04-24', hours: 5.5, invoiced: false },
+    { id: 't5', name: 'QA visual con equipo iOS', project: 'Atlas Banking', date: '2026-04-22', hours: 2.5, invoiced: false },
+    { id: 't6', name: 'Sistema de tipografía v2', project: 'Atlas Banking', date: '2026-04-19', hours: 4, invoiced: false },
+    { id: 't7', name: 'Workshop con stakeholders', project: 'Helio Health', date: '2026-04-15', hours: 3, invoiced: false },
+  ],
+  invoices: [
+    { id: 'i1', number: 'INF-RCA-2026-0004', user: 'Ricardo Castaño', code: 'RCA', period: 'Abril 2026', date: '2026-04-30', amount: 2000, currency: 'USD', status: 'sent', projects: 2 },
+    { id: 'i2', number: 'INF-LMJ-2026-0004', user: 'Laura Mejía', code: 'LMJ', period: 'Abril 2026', date: '2026-04-30', amount: 1700, currency: 'USD', status: 'approved', projects: 1 },
+    { id: 'i3', number: 'INF-DRE-2026-0004', user: 'Diego Restrepo', code: 'DRE', period: 'Abril 2026', date: '2026-04-30', amount: 2500, currency: 'USD', status: 'paid', projects: 1 },
+    { id: 'i4', number: 'INF-AVE-2026-0004', user: 'Andrés Vélez', code: 'AVE', period: 'Abril 2026', date: '2026-04-30', amount: 1840, currency: 'USD', status: 'generated', projects: 2 },
+    { id: 'i5', number: 'INF-COR-2026-0004', user: 'Camila Ortiz', code: 'COR', period: 'Abril 2026', date: '2026-04-30', amount: 3200, currency: 'USD', status: 'reviewed', projects: 1 },
+    { id: 'i6', number: 'INF-RCA-2026-0003', user: 'Ricardo Castaño', code: 'RCA', period: 'Marzo 2026', date: '2026-03-31', amount: 1900, currency: 'USD', status: 'paid', projects: 2 },
+    { id: 'i7', number: 'INF-LMJ-2026-0003', user: 'Laura Mejía', code: 'LMJ', period: 'Marzo 2026', date: '2026-03-31', amount: 1640, currency: 'USD', status: 'paid', projects: 1 },
+  ],
+  numberChangeRequests: [
+    { id: 'r1', invoice: 'INF-RCA-2026-0004', user: 'Ricardo Castaño', current: 'INF-RCA-2026-0004', proposed: 'INF-RCA-2026-0005', reason: 'Salté un consecutivo en mi numeración local', status: 'pending', date: '2026-04-30' },
+    { id: 'r2', invoice: 'INF-AVE-2026-0003', user: 'Andrés Vélez', current: 'INF-AVE-2026-0003', proposed: 'INF-AVE-2026-0007', reason: 'Alinear con consecutivo externo de mi contabilidad', status: 'pending', date: '2026-04-29' },
+    { id: 'r3', invoice: 'INF-COR-2026-0002', user: 'Camila Ortiz', current: 'INF-COR-2026-0002', proposed: 'INF-COR-2026-0010', reason: 'Numeración independiente por cliente', status: 'approved', date: '2026-04-15' },
+  ],
+};
+
+const STATUS_TONE = {
+  draft: 'neutral', generated: 'info', sent: 'info', reviewed: 'warn',
+  approved: 'success', paid: 'success', rejected: 'danger', cancelled: 'neutral',
+  pending: 'warn', applied: 'success', active: 'success', inactive: 'neutral', invited: 'info',
+};
+
+const fmt$ = (n, cur = 'USD') => new Intl.NumberFormat('en-US', {
+  style: 'currency', currency: cur, minimumFractionDigits: 0, maximumFractionDigits: 0,
+}).format(n);
+
+Object.assign(window, { STR, SAMPLE, STATUS_TONE, fmt$ });

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<title>Invoxa — Sistema de facturación · Informage Studios</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="styles/tokens.css"/>
+<style>
+  body { margin: 0; background: #1a1410; color: #fbf7f0; font-family: 'Geist', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  /* Hide scrollbars inside frames */
+  *::-webkit-scrollbar { width: 6px; height: 6px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb { background: rgba(122, 106, 88, 0.25); border-radius: 999px; }
+</style>
+<script type="application/json" id="invoxa-defaults">
+{ "accent": "terracotta", "density": "comfortable", "mode": "light", "lang": "es", "logo": "leaf" }
+</script>
+</head>
+<body>
+
+<div id="root"></div>
+
+<!-- React + Babel -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- Frames + canvas + tweaks -->
+<script type="text/babel" src="android-frame.jsx"></script>
+<script type="text/babel" src="browser-window.jsx"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+
+<!-- Invoxa source -->
+<script type="text/babel" src="components/data.jsx"></script>
+<script type="text/babel" src="components/logos.jsx"></script>
+<script type="text/babel" src="components/ui.jsx"></script>
+<script type="text/babel" src="components/brand.jsx"></script>
+<script type="text/babel" src="components/brand-manual.jsx"></script>
+<script type="text/babel" src="components/screens.jsx"></script>
+<script type="text/babel" src="components/desktop.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo } = React;
+
+// Translations
+const I18N = {
+  es: {
+    welcomeBack: 'Bienvenido de vuelta', signInSub: 'Inicia sesión para continuar a tu espacio de trabajo.',
+    email: 'Correo electrónico', password: 'Contraseña', forgotPassword: '¿Olvidaste tu contraseña?', signIn: 'Iniciar sesión',
+    tagline: 'Facturación humana para equipos creativos.',
+    invited: 'Te invitaron', acceptInvite: 'Acepta tu invitación', acceptInviteSub: 'Te uniste al equipo de',
+    fullName: 'Nombre completo', setPassword: 'Define tu contraseña', createAccount: 'Crear cuenta',
+    project: 'Proyecto', paymentType: 'Modalidad de pago', hourly: 'Por hora', fixed: 'Tarifa fija',
+    home: 'Inicio', users: 'Colaboradores', projects: 'Proyectos', invoices: 'Facturas', tasks: 'Tareas', profile: 'Perfil',
+    activeUsers: 'Activos', invoicesPending: 'Pendientes', invoicesGenerated: 'Generadas', invoicesPaid: 'Pagadas',
+    upcomingDeadline: 'Cierre próximo', requestAll: 'Solicitar a todos', recentActivity: 'Actividad reciente',
+    search: 'Buscar colaborador, proyecto o factura...', all: 'Todos', active: 'Activo', invited: 'Invitado',
+    inviteUser: 'Invitar colaborador', userCode: 'Código de usuario', rate: 'Tarifa', currency: 'Moneda', cancel: 'Cancelar',
+    members: 'Miembros', addMember: 'Añadir', hoursLogged: 'Horas registradas', tasksLogged: 'Tareas',
+    invoicedAmount: 'Total facturado', requests: 'Solicitudes de factura', selected: 'seleccionados', pending: 'Pendiente',
+    breakdown: 'Detalle', subtotal: 'Subtotal', taxes: 'Impuestos', total: 'Total', notes: 'Notas',
+    approve: 'Aprobar', reject: 'Rechazar', changeRequests: 'Cambios de número', current: 'Actual', proposed: 'Propuesto',
+    invoiceNumber: 'Número de factura', generateInvoice: 'Generar factura', totalHours: 'Horas del mes',
+    newTask: 'Nueva tarea', taskName: 'Descripción de la tarea', date: 'Fecha', hours: 'Horas', description: 'Detalle', saveTask: 'Guardar tarea',
+    period: 'Periodo', includedProjects: 'Proyectos incluidos', confirmGenerate: 'Generar factura',
+    billingProfile: 'Perfil de facturación', legalName: 'Razón social', taxId: 'NIT / RFC', city: 'Ciudad', country: 'País',
+    address: 'Dirección', bankName: 'Banco', bankAccount: 'Cuenta', defaultNotes: 'Observaciones por defecto', save: 'Guardar cambios',
+    requestNumberChange: 'Solicitar cambio de número', proposedNumber: 'Número propuesto', reason: 'Motivo de la solicitud', sendRequest: 'Enviar solicitud',
+    dashboard: 'Panel', allUsers: 'Todos los colaboradores', month: 'Mes', year: 'Año',
+    statusPending: 'Pendiente', statusGenerated: 'Generada', statusSent: 'Enviada', statusReview: 'En revisión',
+    statusApproved: 'Aprobada', statusPaid: 'Pagada', statusRejected: 'Rechazada',
+  },
+  en: {
+    welcomeBack: 'Welcome back', signInSub: 'Sign in to continue to your workspace.',
+    email: 'Email', password: 'Password', forgotPassword: 'Forgot your password?', signIn: 'Sign in',
+    tagline: 'Human billing for creative teams.',
+    invited: 'You\'re invited', acceptInvite: 'Accept your invitation', acceptInviteSub: 'You joined the team at',
+    fullName: 'Full name', setPassword: 'Set a password', createAccount: 'Create account',
+    project: 'Project', paymentType: 'Billing type', hourly: 'Hourly', fixed: 'Fixed',
+    home: 'Home', users: 'People', projects: 'Projects', invoices: 'Invoices', tasks: 'Tasks', profile: 'Profile',
+    activeUsers: 'Active', invoicesPending: 'Pending', invoicesGenerated: 'Generated', invoicesPaid: 'Paid',
+    upcomingDeadline: 'Upcoming deadline', requestAll: 'Request from all', recentActivity: 'Recent activity',
+    search: 'Search people, projects or invoices...', all: 'All', active: 'Active', invited: 'Invited',
+    inviteUser: 'Invite person', userCode: 'User code', rate: 'Rate', currency: 'Currency', cancel: 'Cancel',
+    members: 'Members', addMember: 'Add', hoursLogged: 'Hours logged', tasksLogged: 'Tasks',
+    invoicedAmount: 'Invoiced', requests: 'Invoice requests', selected: 'selected', pending: 'Pending',
+    breakdown: 'Breakdown', subtotal: 'Subtotal', taxes: 'Taxes', total: 'Total', notes: 'Notes',
+    approve: 'Approve', reject: 'Reject', changeRequests: 'Number change requests', current: 'Current', proposed: 'Proposed',
+    invoiceNumber: 'Invoice number', generateInvoice: 'Generate invoice', totalHours: 'Hours this month',
+    newTask: 'New task', taskName: 'Task description', date: 'Date', hours: 'Hours', description: 'Details', saveTask: 'Save task',
+    period: 'Period', includedProjects: 'Included projects', confirmGenerate: 'Generate invoice',
+    billingProfile: 'Billing profile', legalName: 'Legal name', taxId: 'Tax ID', city: 'City', country: 'Country',
+    address: 'Address', bankName: 'Bank', bankAccount: 'Account', defaultNotes: 'Default notes', save: 'Save changes',
+    requestNumberChange: 'Request number change', proposedNumber: 'Proposed number', reason: 'Reason', sendRequest: 'Send request',
+    dashboard: 'Dashboard', allUsers: 'All collaborators', month: 'Month', year: 'Year',
+    statusPending: 'Pending', statusGenerated: 'Generated', statusSent: 'Sent', statusReview: 'In review',
+    statusApproved: 'Approved', statusPaid: 'Paid', statusRejected: 'Rejected',
+  },
+};
+
+const ACCENTS = {
+  terracotta: { accent: '#c2410c', hover: '#a8370a', soft: '#f4d9c5' },
+  ochre:      { accent: '#a86b1a', hover: '#8d5712', soft: '#f0e0bf' },
+  forest:     { accent: '#3d6b4a', hover: '#2f5439', soft: '#cfdec7' },
+};
+
+const DENSITY = {
+  compact:     { padScale: 0.85 },
+  comfortable: { padScale: 1.0 },
+  cozy:        { padScale: 1.15 },
+};
+
+function applyTokens({ accent, mode, density, logo }) {
+  const root = document.documentElement;
+  const a = ACCENTS[accent] || ACCENTS.terracotta;
+  root.style.setProperty('--accent', a.accent);
+  root.style.setProperty('--accent-hover', a.hover);
+  root.style.setProperty('--accent-soft', a.soft);
+  if (mode === 'dark') {
+    root.style.setProperty('--bg', '#1a1410');
+    root.style.setProperty('--bg-elev', '#241c16');
+    root.style.setProperty('--bg-sunken', '#15100c');
+    root.style.setProperty('--bg-muted', '#2d241c');
+    root.style.setProperty('--line', '#3a2f24');
+    root.style.setProperty('--line-strong', '#4d3f31');
+    root.style.setProperty('--ink', '#f5ebd9');
+    root.style.setProperty('--ink-2', '#d4c4a8');
+    root.style.setProperty('--ink-3', '#9a8970');
+    root.style.setProperty('--ink-4', '#6b5d4a');
+    root.style.setProperty('--ink-inverse', '#1a1410');
+  } else {
+    root.style.setProperty('--bg', '#fbf7f0');
+    root.style.setProperty('--bg-elev', '#ffffff');
+    root.style.setProperty('--bg-sunken', '#f4ede0');
+    root.style.setProperty('--bg-muted', '#efe7d6');
+    root.style.setProperty('--line', '#e6dcc6');
+    root.style.setProperty('--line-strong', '#d4c8ad');
+    root.style.setProperty('--ink', '#2a1f17');
+    root.style.setProperty('--ink-2', '#4a3a2c');
+    root.style.setProperty('--ink-3', '#7a6a58');
+    root.style.setProperty('--ink-4', '#a89980');
+    root.style.setProperty('--ink-inverse', '#fbf7f0');
+  }
+}
+
+// Helper: phone wrapper
+const Phone = ({ children, mode = 'light' }) => (
+  <AndroidDevice dark={mode === 'dark'} title="invoxa">
+    {children}
+  </AndroidDevice>
+);
+
+// Helper: desktop wrapper at 1280×800
+const Desktop = ({ children, title }) => (
+  <ChromeWindow url={`invoxa.app/${title || ''}`} tabs={[{ title: 'Invoxa' }]} width={1280} height={800}>
+    {children}
+  </ChromeWindow>
+);
+
+function App() {
+  const tweakDefaults = /*EDITMODE-BEGIN*/{
+    "accent": "terracotta",
+    "density": "comfortable",
+    "mode": "light",
+    "lang": "es"
+  }/*EDITMODE-END*/;
+
+  const [tweaks, setTweak] = useTweaks(tweakDefaults);
+  const t = I18N[tweaks.lang] || I18N.es;
+  const variant = 'slash'; // logotipo elegido
+
+  useEffect(() => {
+    applyTokens(tweaks);
+  }, [tweaks.accent, tweaks.mode, tweaks.density, tweaks.logo]);
+
+  return (
+    <>
+      <DesignCanvas
+        title="Invoxa"
+        subtitle={tweaks.lang === 'es'
+          ? 'Sistema de facturación para Informage Studios — admin y colaboradores, móvil y escritorio.'
+          : 'Billing system for Informage Studios — admin and collaborators, mobile and desktop.'}
+        background="#1a1410"
+      >
+        {/* ─────── BRAND SYSTEM ─────── */}
+        <DCSection id="brand-options" title={tweaks.lang === 'es' ? 'Marca · 18 exploraciones (Slash es la elegida ✓)' : 'Brand · 18 explorations (Slash is the chosen ✓)'}>
+          {window.LOGO_OPTIONS.map(opt => (
+            <DCArtboard key={opt.key} id={`opt-${opt.key}`} label={opt.key === 'slash' ? `${opt.name} ✓ elegida` : opt.name} width={340} height={340}>
+              <BrandLogoOption markKey={opt.key} name={opt.name} meaning={opt.meaning} accent={opt.key === 'slash'}/>
+            </DCArtboard>
+          ))}
+        </DCSection>
+
+        <DCSection id="brand-iso" title={tweaks.lang === 'es' ? 'Marca · Isotipo (símbolo)' : 'Brand · Isotype (mark only)'}>
+          <DCArtboard id="iso-light" label="Isotipo · positivo" width={300} height={300}>
+            <BrandIsotipo bg="#fbf7f0" color="#2a1f17" size={120} label="#2a1f17"/>
+          </DCArtboard>
+          <DCArtboard id="iso-dark" label="Isotipo · sobre fondo" width={300} height={300}>
+            <BrandIsotipo bg="#2a1f17" color="#fbf7f0" size={120} label="#fbf7f0"/>
+          </DCArtboard>
+          <DCArtboard id="iso-accent" label="Isotipo · acento" width={300} height={300}>
+            <BrandIsotipo bg="#fbf7f0" color="#c2410c" size={120} label="#c2410c"/>
+          </DCArtboard>
+          <DCArtboard id="iso-mono-accent" label="Isotipo · mono sobre acento" width={300} height={300}>
+            <BrandIsotipo bg="#c2410c" color="#fbf7f0" size={120} label="crema"/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="brand-imago" title={tweaks.lang === 'es' ? 'Marca · Imagotipo (símbolo + texto)' : 'Brand · Imagotype (lockup)'}>
+          <DCArtboard id="imago-h-light" label="Horizontal · positivo" width={460} height={220}>
+            <BrandImagotipo bg="#fbf7f0" color="#2a1f17" size={48} layout="horizontal" label="Principal"/>
+          </DCArtboard>
+          <DCArtboard id="imago-h-dark" label="Horizontal · negativo" width={460} height={220}>
+            <BrandImagotipo bg="#2a1f17" color="#fbf7f0" size={48} layout="horizontal" label="Sobre fondo oscuro"/>
+          </DCArtboard>
+          <DCArtboard id="imago-v-light" label="Vertical" width={300} height={300}>
+            <BrandImagotipo bg="#fbf7f0" color="#2a1f17" size={42} layout="vertical" label="Apilado"/>
+          </DCArtboard>
+          <DCArtboard id="imago-tagline" label="Con tagline" width={460} height={300}>
+            <BrandImagotipo bg="#fbf7f0" color="#2a1f17" size={44} layout="tagline" label="Versión institucional" tagline="Billing · Informage Studios"/>
+          </DCArtboard>
+          <DCArtboard id="imago-accent" label="Sobre acento" width={460} height={220}>
+            <BrandImagotipo bg="#c2410c" color="#fbf7f0" size={48} layout="horizontal" label="Sobre terracota"/>
+          </DCArtboard>
+          <DCArtboard id="imago-tagline-dark" label="Tagline · oscuro" width={460} height={300}>
+            <BrandImagotipo bg="#2a1f17" color="#fbf7f0" size={44} layout="tagline" label="Versión nocturna" tagline="Billing · Informage Studios"/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="brand-rules" title={tweaks.lang === 'es' ? 'Marca · Construcción y normas' : 'Brand · Construction & rules'}>
+          <DCArtboard id="rule-clearspace" label="Área de protección" width={460} height={300}>
+            <BrandClearspace/>
+          </DCArtboard>
+          <DCArtboard id="rule-sizes" label="Escalas mínimas" width={460} height={300}>
+            <BrandSizes/>
+          </DCArtboard>
+          <DCArtboard id="rule-palette" label="Paleta aplicada" width={460} height={300}>
+            <BrandPalette/>
+          </DCArtboard>
+          <DCArtboard id="rule-donts" label="Usos incorrectos" width={460} height={300}>
+            <BrandDonts/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="brand-manual" title={tweaks.lang === 'es' ? 'Manual de marca · 12 láminas (Slash)' : 'Brand manual · 12 plates (Slash)'}>
+          <DCArtboard id="man-cover" label="01 · Portada" width={720} height={460}>
+            <ManualCover/>
+          </DCArtboard>
+          <DCArtboard id="man-concept" label="02 · Concepto" width={720} height={460}>
+            <ManualConcept/>
+          </DCArtboard>
+          <DCArtboard id="man-anatomy" label="03 · Anatomía" width={720} height={460}>
+            <ManualAnatomy/>
+          </DCArtboard>
+          <DCArtboard id="man-palette" label="04 · Paleta completa" width={720} height={460}>
+            <ManualPaletteFull/>
+          </DCArtboard>
+          <DCArtboard id="man-type" label="05 · Tipografía" width={720} height={460}>
+            <ManualType/>
+          </DCArtboard>
+          <DCArtboard id="man-voice" label="06 · Voz y tono" width={720} height={460}>
+            <ManualVoice/>
+          </DCArtboard>
+          <DCArtboard id="man-icons" label="07 · Iconografía" width={720} height={460}>
+            <ManualIconography/>
+          </DCArtboard>
+          <DCArtboard id="man-spacing" label="08 · Espacio y radios" width={720} height={460}>
+            <ManualSpacing/>
+          </DCArtboard>
+          <DCArtboard id="man-patterns" label="09 · Patrones" width={720} height={460}>
+            <ManualPatterns/>
+          </DCArtboard>
+          <DCArtboard id="man-stationery" label="10 · Papelería" width={720} height={460}>
+            <ManualStationery/>
+          </DCArtboard>
+          <DCArtboard id="man-invoice" label="11 · Documento factura" width={720} height={520}>
+            <ManualInvoiceDoc/>
+          </DCArtboard>
+          <DCArtboard id="man-appicon" label="12 · App icon · social · favicon" width={720} height={460}>
+            <ManualAppIcon/>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────── AUTH ─────── */}
+        <DCSection id="auth" title={tweaks.lang === 'es' ? 'Autenticación' : 'Authentication'}>
+          <DCArtboard id="auth-login" label="Login" width={400} height={840}>
+            <Phone mode={tweaks.mode}><AuthLogin t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="auth-invite" label={t.acceptInvite} width={400} height={840}>
+            <Phone mode={tweaks.mode}><AuthAcceptInvite t={t} variant={variant}/></Phone>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────── ADMIN MOBILE ─────── */}
+        <DCSection id="admin-mobile" title={tweaks.lang === 'es' ? 'Admin · Móvil (María Acosta)' : 'Admin · Mobile (María Acosta)'}>
+          <DCArtboard id="admin-dash" label={tweaks.lang === 'es' ? 'Panel admin' : 'Admin dashboard'} width={400} height={840}>
+            <Phone mode={tweaks.mode}><AdminDashboard t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="admin-users" label={t.users} width={400} height={840}>
+            <Phone mode={tweaks.mode}><AdminUsers t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="admin-invite" label={t.inviteUser} width={400} height={840}>
+            <Phone mode={tweaks.mode}><AdminInviteUser t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="admin-projects" label={t.projects} width={400} height={840}>
+            <Phone mode={tweaks.mode}><AdminProjects t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="admin-project-detail" label={tweaks.lang === 'es' ? 'Detalle de proyecto' : 'Project detail'} width={400} height={840}>
+            <Phone mode={tweaks.mode}><AdminProjectDetail t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="admin-requests" label={t.requests} width={400} height={840}>
+            <Phone mode={tweaks.mode}><AdminInvoiceRequests t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="admin-invoices" label={t.invoices} width={400} height={840}>
+            <Phone mode={tweaks.mode}><AdminInvoicesList t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="admin-invoice-detail" label={tweaks.lang === 'es' ? 'Detalle de factura' : 'Invoice detail'} width={400} height={840}>
+            <Phone mode={tweaks.mode}><AdminInvoiceDetail t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="admin-changeReq" label={t.changeRequests} width={400} height={840}>
+            <Phone mode={tweaks.mode}><AdminNumberChangeRequests t={t} variant={variant}/></Phone>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────── USER MOBILE ─────── */}
+        <DCSection id="user-mobile" title={tweaks.lang === 'es' ? 'Colaborador · Móvil (Ricardo Castaño)' : 'Collaborator · Mobile (Ricardo Castaño)'}>
+          <DCArtboard id="user-dash" label={tweaks.lang === 'es' ? 'Panel usuario' : 'User dashboard'} width={400} height={840}>
+            <Phone mode={tweaks.mode}><UserDashboard t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="user-tasks" label={t.tasks} width={400} height={840}>
+            <Phone mode={tweaks.mode}><UserTasks t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="user-newtask" label={t.newTask} width={400} height={840}>
+            <Phone mode={tweaks.mode}><UserNewTask t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="user-generate" label={t.generateInvoice} width={400} height={840}>
+            <Phone mode={tweaks.mode}><UserGenerateInvoice t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="user-invoices" label={t.invoices} width={400} height={840}>
+            <Phone mode={tweaks.mode}><UserInvoices t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="user-billing" label={t.billingProfile} width={400} height={840}>
+            <Phone mode={tweaks.mode}><UserBillingProfile t={t} variant={variant}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="user-changeReq" label={t.requestNumberChange} width={400} height={840}>
+            <Phone mode={tweaks.mode}><UserRequestNumberChange t={t} variant={variant}/></Phone>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────── DESKTOP ─────── */}
+        <DCSection id="desktop" title={tweaks.lang === 'es' ? 'Escritorio · vistas principales' : 'Desktop · main views'}>
+          <DCArtboard id="d-admin-dash" label={tweaks.lang === 'es' ? 'Admin · Panel' : 'Admin · Dashboard'} width={1320} height={870}>
+            <Desktop title="dashboard"><DesktopAdminDashboard t={t} variant={variant}/></Desktop>
+          </DCArtboard>
+          <DCArtboard id="d-admin-users" label={tweaks.lang === 'es' ? 'Admin · Colaboradores' : 'Admin · People'} width={1320} height={870}>
+            <Desktop title="users"><DesktopAdminUsers t={t} variant={variant}/></Desktop>
+          </DCArtboard>
+          <DCArtboard id="d-admin-project" label={tweaks.lang === 'es' ? 'Admin · Proyecto' : 'Admin · Project'} width={1320} height={870}>
+            <Desktop title="projects/atlas"><DesktopAdminProjectDetail t={t} variant={variant}/></Desktop>
+          </DCArtboard>
+          <DCArtboard id="d-admin-invoices" label={tweaks.lang === 'es' ? 'Admin · Facturas' : 'Admin · Invoices'} width={1320} height={870}>
+            <Desktop title="invoices"><DesktopAdminInvoices t={t} variant={variant}/></Desktop>
+          </DCArtboard>
+          <DCArtboard id="d-user-dash" label={tweaks.lang === 'es' ? 'Usuario · Panel' : 'User · Dashboard'} width={1320} height={870}>
+            <Desktop title="dashboard"><DesktopUserDashboard t={t} variant={variant}/></Desktop>
+          </DCArtboard>
+          <DCArtboard id="d-user-generate" label={tweaks.lang === 'es' ? 'Usuario · Generar factura' : 'User · Generate invoice'} width={1320} height={870}>
+            <Desktop title="invoices/new"><DesktopGenerateInvoice t={t} variant={variant}/></Desktop>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────── PDF ─────── */}
+        <DCSection id="pdf" title={tweaks.lang === 'es' ? 'PDF · entregable final' : 'PDF · final deliverable'}>
+          <DCArtboard id="pdf-preview" label="invoice.pdf" width={460} height={620}>
+            <div style={{ width: '100%', height: '100%', background: '#2a1f17', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 30, boxSizing: 'border-box' }}>
+              <InvoicePDF variant={variant}/>
+            </div>
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel title="Tweaks · Invoxa">
+        <TweakSection title={tweaks.lang === 'es' ? 'Idioma' : 'Language'}>
+          <TweakRadio label="Lang" value={tweaks.lang} options={[
+            { value: 'es', label: 'Español' }, { value: 'en', label: 'English' },
+          ]} onChange={v => setTweak('lang', v)}/>
+        </TweakSection>
+        <TweakSection title={tweaks.lang === 'es' ? 'Modo' : 'Mode'}>
+          <TweakRadio label={tweaks.lang === 'es' ? 'Apariencia' : 'Appearance'} value={tweaks.mode} options={[
+            { value: 'light', label: tweaks.lang === 'es' ? 'Claro' : 'Light' },
+            { value: 'dark', label: tweaks.lang === 'es' ? 'Oscuro' : 'Dark' },
+          ]} onChange={v => setTweak('mode', v)}/>
+        </TweakSection>
+        <TweakSection title={tweaks.lang === 'es' ? 'Color de acento' : 'Accent color'}>
+          <TweakColor label={tweaks.lang === 'es' ? 'Acento' : 'Accent'} value={tweaks.accent}
+            options={[
+              { value: 'terracotta', color: '#c2410c' },
+              { value: 'ochre',      color: '#a86b1a' },
+              { value: 'forest',     color: '#3d6b4a' },
+            ]}
+            onChange={v => setTweak('accent', v)}/>
+        </TweakSection>
+        <TweakSection title={tweaks.lang === 'es' ? 'Densidad' : 'Density'}>
+          <TweakRadio label={tweaks.lang === 'es' ? 'Espaciado' : 'Spacing'} value={tweaks.density} options={[
+            { value: 'compact', label: tweaks.lang === 'es' ? 'Compacto' : 'Compact' },
+            { value: 'comfortable', label: tweaks.lang === 'es' ? 'Normal' : 'Normal' },
+            { value: 'cozy', label: tweaks.lang === 'es' ? 'Amplio' : 'Cozy' },
+          ]} onChange={v => setTweak('density', v)}/>
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+
+</body>
+</html>
