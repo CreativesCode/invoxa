@@ -97,7 +97,7 @@ export function Sidebar({ profile }: { profile: Profile }) {
       {/* Logo + menu toggle */}
       <div className="flex items-center justify-between px-4 py-5">
         <Link to="/" className="flex items-center" aria-label="Invoxa">
-          <img src={logoHorizontal} alt="Invoxa" className="h-7 w-auto" />
+          <img src={logoHorizontal} alt="Invoxa" className="h-12 w-auto" />
         </Link>
         <button
           type="button"

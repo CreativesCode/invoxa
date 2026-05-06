@@ -73,7 +73,7 @@ export function LoginPage() {
         <div className="absolute -bottom-40 -left-20 h-[360px] w-[360px] rounded-full bg-primary/15 blur-3xl" />
 
         <div className="relative">
-          <img src={logoCrema} alt="Invoxa" className="h-9 w-auto" />
+          <img src={logoCrema} alt="Invoxa" className="h-16 w-auto" />
         </div>
 
         <div className="relative max-w-[460px]">
@@ -102,7 +102,7 @@ export function LoginPage() {
           <img
             src={logoCafe}
             alt="Invoxa"
-            className="mb-10 h-7 w-auto lg:hidden"
+            className="mb-10 h-12 w-auto lg:hidden"
           />
 
           <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted">

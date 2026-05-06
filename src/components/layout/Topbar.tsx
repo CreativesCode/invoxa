@@ -1,22 +1,21 @@
-import { Bell, LogOut, Search } from 'lucide-react'
+import { LogOut, Search } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../features/auth/AuthProvider'
-
-type Crumb = { label: string }
+import { useProfile } from '../../features/auth/useProfile'
+import { NotificationsBell } from '../../features/notifications/NotificationsBell'
 
 export function Topbar({
   title,
   subtitle,
-  breadcrumbs,
   rightAction,
 }: {
   title: string
   subtitle?: string
-  breadcrumbs?: Crumb[]
   rightAction?: ReactNode
 }) {
   const { signOut } = useAuth()
+  const { data: profile } = useProfile()
   const navigate = useNavigate()
 
   const handleSignOut = async () => {
@@ -26,21 +25,11 @@ export function Topbar({
 
   return (
     <header className="flex h-16 flex-shrink-0 items-center justify-between border-b border-border bg-bg px-7">
-      <div>
-        {breadcrumbs && breadcrumbs.length > 0 && (
-          <div className="mb-0.5 flex items-center gap-1.5 text-[11px] text-muted">
-            {breadcrumbs.map((c, i) => (
-              <span key={i} className="flex items-center gap-1.5">
-                {i > 0 && <span>/</span>}
-                <span>{c.label}</span>
-              </span>
-            ))}
-          </div>
-        )}
-        <h1 className="font-display text-lg font-bold tracking-tightish text-text">
+      <div className="min-w-0">
+        <h1 className="font-display truncate text-lg font-bold tracking-tightish text-text">
           {title}
         </h1>
-        {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
+        {subtitle && <p className="mt-0.5 truncate text-xs text-muted">{subtitle}</p>}
       </div>
 
       <div className="flex items-center gap-3">
@@ -52,14 +41,7 @@ export function Topbar({
           </span>
         </div>
 
-        <button
-          type="button"
-          className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-subtle text-text"
-          aria-label="Notificaciones"
-        >
-          <Bell size={17} />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-subtle bg-red" />
-        </button>
+        {profile && <NotificationsBell profile={profile} />}
 
         {rightAction}
 

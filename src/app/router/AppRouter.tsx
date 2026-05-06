@@ -21,6 +21,7 @@ import { UserDetailPage } from '../../features/admin/users/UserDetailPage'
 import { UsersListPage } from '../../features/admin/users/UsersListPage'
 import { BillingProfilePage } from '../../features/user/billing-profile/BillingProfilePage'
 import { UserDashboardPage } from '../../features/user/dashboard/UserDashboardPage'
+import { NotificationsPage } from '../../features/notifications/NotificationsPage'
 import { MyNumberChangeRequestsPage } from '../../features/user/invoice-number-requests/MyNumberChangeRequestsPage'
 import { InvoiceDetailPage } from '../../features/user/invoices/InvoiceDetailPage'
 import { InvoicesListPage } from '../../features/user/invoices/InvoicesListPage'
@@ -177,6 +178,14 @@ export function AppRouter() {
             </AdminRoute>
           }
         />
+        <Route
+          path="/admin/notifications"
+          element={
+            <AdminRoute>
+              <NotificationsPage />
+            </AdminRoute>
+          }
+        />
 
         {/* User area */}
         <Route
@@ -248,6 +257,14 @@ export function AppRouter() {
           element={
             <UserRoute>
               <MyNumberChangeRequestsPage />
+            </UserRoute>
+          }
+        />
+        <Route
+          path="/app/notifications"
+          element={
+            <UserRoute>
+              <NotificationsPage />
             </UserRoute>
           }
         />
