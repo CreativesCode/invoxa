@@ -51,7 +51,7 @@ Esto **mejora cache hit rate**: cuando subes una versión nueva, sólo invalida 
 - Desaparece el warning `chunks larger than 500 kB`.
 - Cambios: [vite.config.ts](vite.config.ts).
 
-### 3. Compresión Brotli/Gzip al build ✅ COMPLETADO
+### 3. Compresión Brotli/Gzip al build ✅ COMPLETADO (con fix para Ionic Cloud)
 **Problema:** No hay precompresión. Vercel sirve `br/gzip` automáticamente en web pero **Capacitor sirve archivos crudos del bundle** desde `dist/`.
 
 **Acción:**
@@ -63,7 +63,11 @@ Esto **mejora cache hit rate**: cuando subes una versión nueva, sólo invalida 
 - Cada asset > 1 KB ahora tiene `.gz` y `.br` (49 + 49 archivos).
 - Ahorros con Brotli: `vendor-react` 222 KB → 61 KB (−73%), `vendor-supabase` 196 KB → 42 KB (−79%), `vendor-forms` 101 KB → 27 KB (−74%), CSS 28 KB → 5.5 KB (−80%).
 - Brotli es ~10-15% más pequeño que gzip; Vercel sirve `.br` cuando el navegador lo acepta.
-- **Pendiente menor:** los `.br`/`.gz` se incluyen en el APK/IPA de Capacitor (~700 KB extra inertes). Limpiar en `native:sync` cuando se aborde el resto de optimizaciones nativas.
+- **Fix para Capacitor / Ionic Cloud (sin tocar Appflow):** Android Gradle (`mergeDebugAssets`) trata `foo.js` y `foo.js.gz` como recursos duplicados y rompe el APK. Solución:
+  - La compresión ahora se activa **sólo cuando `process.env.VERCEL === '1'`** (env var que Vercel setea automáticamente en sus builds).
+  - Vercel sigue generando 52 `.gz` + 52 `.br` para servicio precomputado.
+  - Appflow / local / cualquier otro build: 0 archivos comprimidos → APK builds limpio.
+  - **Cero configuración requerida en Appflow** — el dashboard no expone `VERCEL`, así que la compresión queda apagada por default ahí.
 - Cambios: [vite.config.ts](vite.config.ts), [package.json](package.json) (+`vite-plugin-compression2`).
 
 ### 4. Self-hostear las fuentes (o preload con `font-display: swap`) ✅ COMPLETADO
