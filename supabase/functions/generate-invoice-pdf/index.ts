@@ -375,9 +375,10 @@ function drawInvoiceBox(
   sansBold: PDFFont,
   serif: PDFFont,
 ) {
-  const boxW = 230
+  const boxW = 250
   const boxH = 56
   const boxX = PAGE_W - MARGIN - boxW
+  const colSplit = 0.4 // FECHA narrower, Nº FACTURA wider
 
   // FACTURA title (serif, terracotta)
   const titleSize = 26
@@ -400,9 +401,10 @@ function drawInvoiceBox(
     borderColor: COLOR.line,
     borderWidth: 0.8,
   })
+  const splitX = boxX + boxW * colSplit
   page.drawLine({
-    start: { x: boxX + boxW / 2, y: boxTop },
-    end: { x: boxX + boxW / 2, y: boxTop - boxH },
+    start: { x: splitX, y: boxTop },
+    end: { x: splitX, y: boxTop - boxH },
     thickness: 0.8,
     color: COLOR.line,
   })
@@ -422,7 +424,7 @@ function drawInvoiceBox(
     color: COLOR.ink3,
   })
   page.drawText('Nº FACTURA', {
-    x: boxX + boxW / 2 + 10,
+    x: splitX + 10,
     y: boxTop - 17,
     size: 8.5,
     font: sansBold,
@@ -437,10 +439,20 @@ function drawInvoiceBox(
     font: sans,
     color: COLOR.ink,
   })
+
+  // Auto-shrink the invoice number if it doesn't fit the right cell
+  const numCellW = boxX + boxW - splitX - 20 // 10px padding each side
+  let numSize = 10
+  while (
+    sans.widthOfTextAtSize(invoice.invoice_number, numSize) > numCellW &&
+    numSize > 7
+  ) {
+    numSize -= 0.5
+  }
   page.drawText(invoice.invoice_number, {
-    x: boxX + boxW / 2 + 10,
+    x: splitX + 10,
     y: boxTop - boxH / 2 - 17,
-    size: 10,
+    size: numSize,
     font: sans,
     color: COLOR.ink,
   })
@@ -453,16 +465,14 @@ function drawRecipient(
   sansBold: PDFFont,
 ): number {
   const boxW = 280
-  let y = startY
 
   page.drawText('Factura para:', {
     x: MARGIN,
-    y,
+    y: startY,
     size: 9,
     font: sansBold,
     color: COLOR.ink3,
   })
-  y -= 14
 
   const lines = [
     'Informage Studios S.L.U.',
@@ -472,28 +482,35 @@ function drawRecipient(
     'Valencia – España',
   ]
 
-  const blockH = lines.length * 14 + 16
+  const labelGap = 8
+  const padTop = 16
+  const padBottom = 14
+  const lineH = 14
+  const boxTop = startY - labelGap
+  const blockH = padTop + (lines.length - 1) * lineH + padBottom
+
   page.drawRectangle({
     x: MARGIN,
-    y: y - blockH + 14,
+    y: boxTop - blockH,
     width: boxW,
     height: blockH,
     borderColor: COLOR.line,
     borderWidth: 0.6,
   })
 
+  let textY = boxTop - padTop
   for (const line of lines) {
     page.drawText(line, {
       x: MARGIN + 12,
-      y,
+      y: textY,
       size: 10,
       font: sans,
       color: COLOR.ink2,
     })
-    y -= 14
+    textY -= lineH
   }
 
-  return y - 4
+  return boxTop - blockH - 4
 }
 
 function drawItemsTable(
