@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /admin/
+Disallow: /app
+Disallow: /app/
+Disallow: /login
+Disallow: /forgot-password
+Disallow: /accept-invite
+Disallow: /landing
+
+Sitemap: https://invoxa-ten.vercel.app/sitemap.xml

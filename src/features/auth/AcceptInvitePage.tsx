@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { Button } from '../../components/ui/Button'
 import { Field } from '../../components/ui/Field'
+import { useDocumentMeta } from '../../lib/seo/useDocumentMeta'
 import { supabase } from '../../lib/supabase/client'
 
 const schema = z
@@ -21,6 +22,11 @@ const schema = z
 type FormValues = z.infer<typeof schema>
 
 export function AcceptInvitePage() {
+  useDocumentMeta({
+    title: 'Aceptar invitación',
+    description: 'Activa tu cuenta de Invoxa para empezar a colaborar.',
+    noindex: true,
+  })
   const navigate = useNavigate()
   const [serverError, setServerError] = useState<string | null>(null)
   const [hasSession, setHasSession] = useState<boolean | null>(null)

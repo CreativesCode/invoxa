@@ -1,10 +1,30 @@
 import { Navigate } from 'react-router-dom'
+import { isNative } from '../../lib/native/platform'
+import { LandingPage } from '../landing/LandingPage'
+import { useAuth } from './AuthProvider'
 import { useProfile } from './useProfile'
 
 export function HomeRedirect() {
-  const { data: profile, isLoading, error } = useProfile()
+  const { session, loading: authLoading } = useAuth()
+  const { data: profile, isLoading: profileLoading, error } = useProfile()
 
-  if (isLoading) {
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">
+        Cargando…
+      </div>
+    )
+  }
+
+  // Unauthenticated visitor: on the web we render the marketing landing
+  // directly at "/" so it's the canonical URL for SEO. On the native shell
+  // (Capacitor) the landing must never appear — go straight to login.
+  if (!session) {
+    if (isNative()) return <Navigate to="/login" replace />
+    return <LandingPage />
+  }
+
+  if (profileLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">
         Cargando…

@@ -4,6 +4,8 @@ import {
   FileText,
   FolderKanban,
   Home,
+  LogOut,
+  Menu,
   ReceiptText,
   Send,
   Settings,
@@ -11,9 +13,11 @@ import {
   Users,
   X,
 } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import logoHorizontal from '/brand/imagotipo-horizontal-cafe.svg'
+import isotipoCafe from '/brand/isotipo-cafe.svg'
+import { useAuth } from '../../features/auth/AuthProvider'
 import type { Profile, UserRole } from '../../types/profile'
 
 type NavItem = {
@@ -93,29 +97,46 @@ export function Sidebar({
   className = '',
   onNavigate,
   showCloseButton = false,
+  collapsed = false,
+  onToggleCollapsed,
 }: {
   profile: Profile
   className?: string
   onNavigate?: () => void
   showCloseButton?: boolean
+  collapsed?: boolean
+  onToggleCollapsed?: () => void
 }) {
   const sections = profile.role === 'admin' ? adminSections : userSections
   const initials = getInitials(profile.full_name || profile.email)
 
   return (
     <aside
-      className={`flex h-full w-[252px] flex-shrink-0 flex-col border-r border-border bg-bg ${className}`}
+      className={`flex h-full ${collapsed ? 'w-[68px]' : 'w-[252px]'} flex-shrink-0 flex-col border-r border-border bg-bg transition-[width] duration-200 ${className}`}
     >
-      {/* Logo + close (mobile) */}
-      <div className="flex items-center justify-between px-4 py-5">
-        <Link
-          to="/"
-          className="flex items-center"
-          aria-label="Invoxa"
-          onClick={onNavigate}
-        >
-          <img src={logoHorizontal} alt="Invoxa" className="h-12 w-auto" />
-        </Link>
+      {/* Logo + toggle / close */}
+      <div
+        className={`flex items-center ${collapsed ? 'flex-col gap-3 px-2' : 'justify-between px-4'} py-5`}
+      >
+        {collapsed ? (
+          <Link
+            to="/"
+            aria-label="Invoxa"
+            className="flex h-9 w-9 items-center justify-center"
+            onClick={onNavigate}
+          >
+            <img src={isotipoCafe} alt="Invoxa" className="h-8 w-8" />
+          </Link>
+        ) : (
+          <Link
+            to="/"
+            className="flex items-center"
+            aria-label="Invoxa"
+            onClick={onNavigate}
+          >
+            <img src={logoHorizontal} alt="Invoxa" className="h-12 w-auto" />
+          </Link>
+        )}
         {showCloseButton && (
           <button
             type="button"
@@ -126,23 +147,36 @@ export function Sidebar({
             <X size={16} />
           </button>
         )}
+        {onToggleCollapsed && (
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            className="flex h-8 w-8 items-center justify-center rounded-md text-muted hover:bg-subtle hover:text-text-sec"
+            aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
+            title={collapsed ? 'Expandir menú' : 'Colapsar menú'}
+          >
+            <Menu size={16} />
+          </button>
+        )}
       </div>
 
       {/* Org card */}
-      <div className="mx-3 mb-3.5 flex cursor-pointer items-center gap-2.5 rounded-xl border border-border bg-subtle px-3 py-2.5">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-blue text-[11px] font-bold text-white">
-          IS
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-xs font-semibold text-text">
-            Informage Studios
+      {!collapsed && (
+        <div className="mx-3 mb-3.5 flex cursor-pointer items-center gap-2.5 rounded-xl border border-border bg-subtle px-3 py-2.5">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-blue text-[11px] font-bold text-white">
+            IS
           </div>
-          <div className="mt-0.5 text-[10px] capitalize text-muted">
-            {profile.role}
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-xs font-semibold text-text">
+              Informage Studios
+            </div>
+            <div className="mt-0.5 text-[10px] capitalize text-muted">
+              {profile.role}
+            </div>
           </div>
+          <ChevronDown size={14} className="text-muted" />
         </div>
-        <ChevronDown size={14} className="text-muted" />
-      </div>
+      )}
 
       {/* Sections */}
       <nav className="scrollbar-none flex-1 overflow-y-auto px-2.5 pb-2">
@@ -151,46 +185,140 @@ export function Sidebar({
             key={section.title}
             section={section}
             onNavigate={onNavigate}
+            collapsed={collapsed}
           />
         ))}
       </nav>
 
       {/* User card */}
-      <div className="flex items-center gap-2.5 border-t border-border p-3">
-        <div className="font-display flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-dark text-xs font-bold text-white">
+      <div
+        className={`flex items-center border-t border-border p-3 ${collapsed ? 'justify-center' : 'gap-2.5'}`}
+      >
+        <div
+          className="font-display flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-dark text-xs font-bold text-white"
+          title={collapsed ? profile.full_name || profile.email : undefined}
+        >
           {initials}
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-xs font-semibold text-text">
-            {profile.full_name || profile.email}
-          </div>
-          <div className="text-[10px] capitalize text-muted">{profile.role}</div>
-        </div>
-        <button
-          type="button"
-          className="flex h-7 w-7 items-center justify-center rounded-lg bg-subtle text-muted hover:text-text-sec"
-          aria-label="Settings"
-        >
-          <Settings size={14} />
-        </button>
+        {!collapsed && (
+          <>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-xs font-semibold text-text">
+                {profile.full_name || profile.email}
+              </div>
+              <div className="text-[10px] capitalize text-muted">
+                {profile.role}
+              </div>
+            </div>
+            <SettingsMenu profile={profile} onNavigate={onNavigate} />
+          </>
+        )}
       </div>
     </aside>
+  )
+}
+
+function SettingsMenu({
+  profile,
+  onNavigate,
+}: {
+  profile: Profile
+  onNavigate?: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
+  const { signOut } = useAuth()
+
+  useEffect(() => {
+    if (!open) return
+    function handleClick(e: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false)
+      }
+    }
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleKey)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleKey)
+    }
+  }, [open])
+
+  const handleNavigate = (to: string) => {
+    setOpen(false)
+    onNavigate?.()
+    navigate(to)
+  }
+
+  const handleSignOut = async () => {
+    setOpen(false)
+    onNavigate?.()
+    await signOut()
+    navigate('/login', { replace: true })
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex h-7 w-7 items-center justify-center rounded-lg bg-subtle text-muted hover:text-text-sec"
+        aria-label="Configuración"
+        aria-expanded={open}
+      >
+        <Settings size={14} />
+      </button>
+
+      {open && (
+        <div className="absolute bottom-full right-0 z-50 mb-2 w-52 overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
+          {profile.role === 'user' && (
+            <button
+              type="button"
+              onClick={() => handleNavigate('/app/billing-profile')}
+              className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-[13px] text-text-sec hover:bg-subtle"
+            >
+              <UserSquare size={15} />
+              Mi perfil
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="flex w-full items-center gap-2.5 border-t border-border px-3 py-2.5 text-left text-[13px] text-text-sec hover:bg-subtle"
+          >
+            <LogOut size={15} />
+            Cerrar sesión
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
 
 function SidebarSection({
   section,
   onNavigate,
+  collapsed = false,
 }: {
   section: NavSection
   onNavigate?: () => void
+  collapsed?: boolean
 }) {
   const location = useLocation()
   return (
     <div className="mb-4">
-      <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-muted">
-        {section.title}
-      </div>
+      {!collapsed && (
+        <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-muted">
+          {section.title}
+        </div>
+      )}
       {section.items.map((item) => {
         const active = location.pathname.startsWith(item.to)
         return (
@@ -198,7 +326,13 @@ function SidebarSection({
             key={item.to}
             to={item.to}
             onClick={onNavigate}
-            className={`relative my-px flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition ${
+            title={collapsed ? item.label : undefined}
+            aria-label={collapsed ? item.label : undefined}
+            className={`relative my-px flex items-center rounded-lg text-[13px] font-medium transition ${
+              collapsed
+                ? 'h-10 justify-center px-0'
+                : 'gap-2.5 px-2.5 py-2'
+            } ${
               active
                 ? 'bg-primary/10 font-semibold text-primary'
                 : 'text-text-sec hover:bg-subtle'
@@ -208,9 +342,18 @@ function SidebarSection({
               <span className="absolute -left-[10px] top-1.5 bottom-1.5 w-[2.5px] rounded-full bg-primary" />
             )}
             {item.icon}
-            <span className="flex-1">{item.label}</span>
-            {item.badge ? (
-              <span className="min-w-[18px] rounded-full bg-primary px-1.5 py-0.5 text-center text-[10px] font-bold text-white">
+            {!collapsed && (
+              <>
+                <span className="flex-1">{item.label}</span>
+                {item.badge ? (
+                  <span className="min-w-[18px] rounded-full bg-primary px-1.5 py-0.5 text-center text-[10px] font-bold text-white">
+                    {item.badge}
+                  </span>
+                ) : null}
+              </>
+            )}
+            {collapsed && item.badge ? (
+              <span className="absolute right-1 top-1 min-w-[16px] rounded-full bg-primary px-1 py-px text-center text-[9px] font-bold text-white">
                 {item.badge}
               </span>
             ) : null}

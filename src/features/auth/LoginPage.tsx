@@ -8,6 +8,7 @@ import logoCrema from '/brand/imagotipo-horizontal-crema.svg'
 import logoCafe from '/brand/imagotipo-horizontal-cafe.svg'
 import { Button } from '../../components/ui/Button'
 import { Field } from '../../components/ui/Field'
+import { useDocumentMeta } from '../../lib/seo/useDocumentMeta'
 import { supabase } from '../../lib/supabase/client'
 
 const loginSchema = z.object({
@@ -18,6 +19,11 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>
 
 export function LoginPage() {
+  useDocumentMeta({
+    title: 'Iniciar sesión',
+    description: 'Accede a tu cuenta de Invoxa para gestionar horas, proyectos y facturas.',
+    noindex: true,
+  })
   const navigate = useNavigate()
   const [serverError, setServerError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)

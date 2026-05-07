@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useProfile } from '../../features/auth/useProfile'
 import { useNotificationsRealtime } from '../../features/notifications/useNotificationsRealtime'
+import { useDocumentMeta } from '../../lib/seo/useDocumentMeta'
 import { MobileBottomNav } from './MobileBottomNav'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
@@ -21,8 +22,13 @@ export function AppShell({
   rightAction?: ReactNode
   children: ReactNode
 }) {
+  useDocumentMeta({ title, description: subtitle, noindex: true })
   const { data: profile } = useProfile()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return window.localStorage.getItem('invoxa:sidebar-collapsed') === '1'
+  })
   const location = useLocation()
   useNotificationsRealtime()
 
@@ -30,6 +36,14 @@ export function AppShell({
   useEffect(() => {
     setDrawerOpen(false)
   }, [location.pathname])
+
+  // Persist desktop sidebar collapsed state.
+  useEffect(() => {
+    window.localStorage.setItem(
+      'invoxa:sidebar-collapsed',
+      sidebarCollapsed ? '1' : '0',
+    )
+  }, [sidebarCollapsed])
 
   // Lock body scroll while drawer is open.
   useEffect(() => {
@@ -58,7 +72,12 @@ export function AppShell({
       }}
     >
       {/* Desktop sidebar (always visible from md up) */}
-      <Sidebar profile={profile} className="hidden md:flex" />
+      <Sidebar
+        profile={profile}
+        className="hidden md:flex"
+        collapsed={sidebarCollapsed}
+        onToggleCollapsed={() => setSidebarCollapsed((v) => !v)}
+      />
 
       {/* Mobile drawer overlay */}
       {drawerOpen && (

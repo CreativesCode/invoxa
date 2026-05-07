@@ -50,20 +50,16 @@ export function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Legacy URL — landing now lives at "/" for SEO. */}
+        <Route path="/landing" element={<Navigate to="/" replace />} />
+
         {/* Public auth routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/accept-invite" element={<AcceptInvitePage />} />
 
-        {/* Authenticated landing — redirects by role */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <HomeRedirect />
-            </ProtectedRoute>
-          }
-        />
+        {/* Root — redirects by session/role/platform (HomeRedirect handles unauth too) */}
+        <Route path="/" element={<HomeRedirect />} />
 
         {/* Admin area */}
         <Route

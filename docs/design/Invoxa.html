@@ -39,6 +39,8 @@
 <script type="text/babel" src="components/brand-manual.jsx"></script>
 <script type="text/babel" src="components/screens.jsx"></script>
 <script type="text/babel" src="components/desktop.jsx"></script>
+<script type="text/babel" src="components/landing-strings.jsx"></script>
+<script type="text/babel" src="components/landing.jsx"></script>
 
 <script type="text/babel">
 const { useState, useEffect, useMemo } = React;
@@ -279,6 +281,16 @@ function App() {
           </DCArtboard>
           <DCArtboard id="man-appicon" label="12 · App icon · social · favicon" width={720} height={460}>
             <ManualAppIcon/>
+          </DCArtboard>
+        </DCSection>
+
+        {/* ─────── LANDING ─────── */}
+        <DCSection id="landing" title={tweaks.lang === 'es' ? 'Landing · móvil + escritorio' : 'Landing · mobile + desktop'}>
+          <DCArtboard id="landing-warm-mobile" label={tweaks.lang === 'es' ? 'Cálida · móvil' : 'Warm · mobile'} width={400} height={1400}>
+            <Phone mode="light"><LandingPage lang={tweaks.lang} setLang={v => setTweak('lang', v)} desktop={false}/></Phone>
+          </DCArtboard>
+          <DCArtboard id="landing-warm-desktop" label={tweaks.lang === 'es' ? 'Cálida · escritorio' : 'Warm · desktop'} width={1320} height={870}>
+            <Desktop title=""><LandingPage lang={tweaks.lang} setLang={v => setTweak('lang', v)} desktop={true}/></Desktop>
           </DCArtboard>
         </DCSection>
 

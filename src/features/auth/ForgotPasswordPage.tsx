@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom'
 import { z } from 'zod'
 import { Button } from '../../components/ui/Button'
 import { Field } from '../../components/ui/Field'
+import { useDocumentMeta } from '../../lib/seo/useDocumentMeta'
 import { supabase } from '../../lib/supabase/client'
 
 const schema = z.object({
@@ -15,6 +16,11 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>
 
 export function ForgotPasswordPage() {
+  useDocumentMeta({
+    title: 'Recuperar contraseña',
+    description: 'Recupera el acceso a tu cuenta de Invoxa.',
+    noindex: true,
+  })
   const [serverMessage, setServerMessage] = useState<string | null>(null)
   const [serverError, setServerError] = useState<string | null>(null)
 
