@@ -3,10 +3,14 @@ import { SplashScreen } from '@capacitor/splash-screen'
 import { StatusBar, Style } from '@capacitor/status-bar'
 import { isNative } from './platform'
 
+let splashHidden = false
+
 /**
- * Runs once at app startup. Configures status bar, hides the splash after
- * the React tree has mounted, and wires the hardware back button on Android
- * to history.back(). Safe to call from web — short-circuits when not native.
+ * Runs once at app startup. Configures status bar and wires the hardware
+ * back button on Android to history.back(). The native splash is NOT hidden
+ * here — call `hideNativeSplash()` after auth resolves so the user goes
+ * straight from splash to a meaningful screen instead of a "Cargando…"
+ * placeholder. Safe to call from web — short-circuits when not native.
  */
 export async function bootstrapNative(): Promise<void> {
   if (!isNative()) return
@@ -26,13 +30,6 @@ export async function bootstrapNative(): Promise<void> {
     // Older Android may reject some calls — non-fatal.
   }
 
-  // Hide the splash with a small fade once we're ready.
-  try {
-    await SplashScreen.hide({ fadeOutDuration: 250 })
-  } catch {
-    /* ignore */
-  }
-
   // Hardware back button on Android: pop history if possible, otherwise
   // exit the app. The default capacitor behaviour exits immediately, which
   // is jarring inside a multi-screen SPA.
@@ -43,4 +40,23 @@ export async function bootstrapNative(): Promise<void> {
       App.exitApp()
     }
   })
+
+  // Safety net: if auth never resolves (network down, Supabase outage), force
+  // the splash off after 5 s so the user at least sees login or an error.
+  window.setTimeout(() => void hideNativeSplash(), 5000)
+}
+
+/**
+ * Idempotent. Called from `AuthProvider` once the session is resolved so the
+ * splash hides only when there is real UI to show (login/landing/dashboard).
+ * On web this is a no-op.
+ */
+export async function hideNativeSplash(): Promise<void> {
+  if (!isNative() || splashHidden) return
+  splashHidden = true
+  try {
+    await SplashScreen.hide({ fadeOutDuration: 220 })
+  } catch {
+    /* ignore */
+  }
 }

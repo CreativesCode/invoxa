@@ -1,19 +1,23 @@
+import { lazy, Suspense } from 'react'
 import { Navigate } from 'react-router-dom'
+import { RouteFallback } from '../../components/ui/RouteFallback'
 import { isNative } from '../../lib/native/platform'
-import { LandingPage } from '../landing/LandingPage'
 import { useAuth } from './AuthProvider'
 import { useProfile } from './useProfile'
+
+// Lazy import keeps the 1200+ line marketing landing out of the main bundle.
+// On native (Capacitor) we redirect to /login before this ever resolves, so
+// the chunk is never fetched on the mobile shell.
+const LandingPage = lazy(() =>
+  import('../landing/LandingPage').then((m) => ({ default: m.LandingPage })),
+)
 
 export function HomeRedirect() {
   const { session, loading: authLoading } = useAuth()
   const { data: profile, isLoading: profileLoading, error } = useProfile()
 
   if (authLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">
-        Cargando…
-      </div>
-    )
+    return <RouteFallback />
   }
 
   // Unauthenticated visitor: on the web we render the marketing landing
@@ -21,15 +25,15 @@ export function HomeRedirect() {
   // (Capacitor) the landing must never appear — go straight to login.
   if (!session) {
     if (isNative()) return <Navigate to="/login" replace />
-    return <LandingPage />
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <LandingPage />
+      </Suspense>
+    )
   }
 
   if (profileLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">
-        Cargando…
-      </div>
-    )
+    return <RouteFallback />
   }
 
   if (error || !profile) {

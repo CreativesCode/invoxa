@@ -4,9 +4,15 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Geist', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Fraunces', 'Instrument Serif', 'Georgia', 'serif'],
-        mono: ['"Geist Mono"', 'ui-monospace', 'JetBrains Mono', 'monospace'],
+        sans: ['"Geist Variable"', 'Geist', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['"Fraunces Variable"', 'Fraunces', 'Instrument Serif', 'Georgia', 'serif'],
+        mono: [
+          '"Geist Mono Variable"',
+          '"Geist Mono"',
+          'ui-monospace',
+          'JetBrains Mono',
+          'monospace',
+        ],
       },
       colors: {
         // Surfaces — warm cream

@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { useProfile } from '../../features/auth/useProfile'
 import { useNotificationsRealtime } from '../../features/notifications/useNotificationsRealtime'
 import { useDocumentMeta } from '../../lib/seo/useDocumentMeta'
+import { RouteFallback } from '../ui/RouteFallback'
 import { MobileBottomNav } from './MobileBottomNav'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
@@ -56,11 +57,7 @@ export function AppShell({
   }, [drawerOpen])
 
   if (!profile) {
-    return (
-      <div className="flex h-screen items-center justify-center text-sm text-muted">
-        Cargando…
-      </div>
-    )
+    return <RouteFallback />
   }
 
   return (

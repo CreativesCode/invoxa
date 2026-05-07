@@ -1,3 +1,10 @@
+/* Self-hosted variable fonts — replace the blocking Google Fonts <link> in
+   index.html. Browsers only download the unicode-range subsets they actually
+   render, and Vite hashes/caches each woff2 individually. */
+@import '@fontsource-variable/geist/wght.css';
+@import '@fontsource-variable/geist-mono/wght.css';
+@import '@fontsource-variable/fraunces/opsz.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,7 +18,7 @@
 
   body {
     margin: 0;
-    font-family: 'Geist', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+    font-family: 'Geist Variable', 'Geist', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background: #fbf7f0;
@@ -41,12 +48,12 @@
 
 @layer utilities {
   .font-display {
-    font-family: 'Fraunces', 'Instrument Serif', Georgia, serif;
+    font-family: 'Fraunces Variable', 'Fraunces', 'Instrument Serif', Georgia, serif;
     font-optical-sizing: auto;
     letter-spacing: -0.02em;
   }
   .font-mono {
-    font-family: 'Geist Mono', ui-monospace, monospace;
+    font-family: 'Geist Mono Variable', 'Geist Mono', ui-monospace, monospace;
   }
   .tabular {
     font-variant-numeric: tabular-nums;

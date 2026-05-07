@@ -7,6 +7,7 @@ import {
 } from 'react'
 import type { ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
+import { hideNativeSplash } from '../../lib/native/bootstrap'
 import { supabase } from '../../lib/supabase/client'
 
 type AuthContextValue = {
@@ -28,6 +29,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return
       setSession(data.session)
       setLoading(false)
+      // On Capacitor, dismiss the native splash now that we know whether to
+      // route to login/landing/dashboard — avoids the splash → "Cargando…"
+      // flash. No-op on web.
+      void hideNativeSplash()
     })
 
     const { data: listener } = supabase.auth.onAuthStateChange(
