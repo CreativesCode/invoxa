@@ -1,5 +1,4 @@
-import { formatDistanceToNow } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { formatRelativeEs } from '../../lib/dates/relative'
 import { Bell, CheckCheck } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -128,10 +127,7 @@ export function NotificationsBell({ profile }: { profile: Profile }) {
                       </div>
                     )}
                     <div className="mt-1 text-[10px] text-muted">
-                      {formatDistanceToNow(new Date(n.created_at), {
-                        addSuffix: true,
-                        locale: es,
-                      })}
+                      {formatRelativeEs(n.created_at, { addSuffix: true })}
                     </div>
                   </div>
                 </button>

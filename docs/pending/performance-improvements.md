@@ -108,7 +108,7 @@ Esto **mejora cache hit rate**: cuando subes una versión nueva, sólo invalida 
 
 ## P1 — Mejoras de tamaño y reactividad (esfuerzo medio)
 
-### 6. Tree-shake / verificar `lucide-react`
+### 6. Tree-shake / verificar `lucide-react` ✅ VERIFICADO (sin acción)
 **Problema:** 37 archivos importan iconos (búsqueda en [src/](src)). El paquete `"lucide-react": "^1.14.0"` declarado en [package.json:32](package.json#L32) es **inusual** — la versión oficial actual es `0.x`. Confirma cuál estás usando: si es un fork o versión vieja, probablemente no tree-shake bien y empaquetes los ~1000 iconos.
 
 **Acción:**
@@ -116,7 +116,9 @@ Esto **mejora cache hit rate**: cuando subes una versión nueva, sólo invalida 
 - Si pesa > 30 KB en el bundle, migrar a `lucide-react@latest` (named imports tree-shake correctamente) o usar `lucide-react/icons/*` per-icon.
 - Alternativa: copiar los ~15-20 iconos que realmente usas como SVG inline (cero dependencia, mejor cache).
 
-### 7. `date-fns` por imports puntuales
+**Resultado:** la versión `1.14.0` instalada es la oficial y declara `sideEffects: false`. El chunk `vendor-icons` final pesa **9.73 KB / 3.71 KB gzip** para los 37 archivos importadores → el tree-shaking ya está funcionando óptimamente. No requiere cambios.
+
+### 7. `date-fns` por imports puntuales ✅ COMPLETADO
 **Problema:** 18 archivos importan de `date-fns`. Aunque date-fns v4 es tree-shakeable, los locales no siempre lo son (`date-fns/locale/es`).
 
 **Acción:**
@@ -124,7 +126,13 @@ Esto **mejora cache hit rate**: cuando subes una versión nueva, sólo invalida 
 - Considerar reemplazar `formatDistanceToNow` (lo más pesado por incluir lógica de pluralización) por una utilidad propia de 30 líneas en [src/lib/dates/](src/lib/dates/), ya que el caso de uso (notificaciones) es muy acotado.
 - Si se vuelve necesario, evaluar `dayjs` (~7 KB) que es drop-in para muchos casos.
 
-### 8. Persistencia offline de React Query (esencial para Capacitor)
+**Resultado:**
+- Tree-shaking de date-fns ya funciona (sólo `format`, `addMonths`, `subMonths`, `isSameMonth`, `startOfMonth`, `endOfMonth` quedan en bundle).
+- `formatDistanceToNow` + locale `es` reemplazados por una utilidad de ~30 líneas en [src/lib/dates/relative.ts](src/lib/dates/relative.ts) (`formatRelativeEs`).
+- `vendor-date`: **27.79 KB → 25.69 KB** (−2 KB raw / −0.6 KB gzip).
+- Cambios: [src/lib/dates/relative.ts](src/lib/dates/relative.ts) (nuevo), [src/features/notifications/NotificationsBell.tsx](src/features/notifications/NotificationsBell.tsx), [src/features/notifications/NotificationsPage.tsx](src/features/notifications/NotificationsPage.tsx).
+
+### 8. Persistencia offline de React Query (esencial para Capacitor) ✅ COMPLETADO
 **Problema:** [src/app/providers/QueryProvider.tsx](src/app/providers/QueryProvider.tsx) tiene `staleTime: 30_000` pero **no persiste el cache**. Cada cold-start de la app nativa = todas las queries de cero, aunque el usuario abra la app cinco minutos después.
 
 **Acción:**
@@ -133,21 +141,42 @@ Esto **mejora cache hit rate**: cuando subes una versión nueva, sólo invalida 
 - Configurar `maxAge: 1000 * 60 * 60 * 24` (24 h) para listas largas (proyectos, usuarios).
 - **Beneficio enorme en móvil:** apertura instantánea con datos cacheados, refetch en background.
 
-### 9. `BrowserRouter` v7 y `startTransition`
+**Resultado:**
+- [src/app/providers/QueryProvider.tsx](src/app/providers/QueryProvider.tsx) ahora usa `PersistQueryClientProvider` con `createSyncStoragePersister` (`localStorage` funciona igual de bien en web y en el WebView de Capacitor — más simple que dos persisters).
+- `gcTime` subido a 24 h (necesario para que las entradas no se desalojen antes de que el persister rehidrate).
+- `dehydrateOptions.shouldDehydrateQuery` filtra para persistir sólo queries `success` (nunca errores).
+- `buster: import.meta.env.VITE_BUILD_ID` invalida la cache en cada deploy si se setea esa env.
+- [src/features/auth/AuthProvider.tsx](src/features/auth/AuthProvider.tsx) — `signOut` llama `queryClient.clear()` y borra `invoxa-query-cache` de localStorage para evitar leak entre usuarios.
+- Costo: `vendor-query` 29 KB → 33 KB (+4 KB raw / +1 KB gzip). Trade-off muy positivo: cold-start instantáneo, soporte offline en Capacitor.
+- Cambios: [package.json](package.json) (+`@tanstack/query-sync-storage-persister`, `@tanstack/react-query-persist-client`, `@capacitor/preferences`), [src/app/providers/QueryProvider.tsx](src/app/providers/QueryProvider.tsx), [src/features/auth/AuthProvider.tsx](src/features/auth/AuthProvider.tsx).
+
+### 9. `BrowserRouter` v7 y `startTransition` ✅ VERIFICADO (sin acción)
 **Acción opcional:**
 - React Router 7 está en `package.json`. Asegurarse que `Routes` esté configurado con `future={{ v7_startTransition: true }}` para que las navegaciones hagan transiciones concurrentes en lugar de bloquear.
 - Esto reduce los "frames perdidos" cuando navegas entre páginas pesadas.
 
-### 10. `Suspense` boundaries por sección
+**Resultado:** en `react-router-dom@7.15.0` todas las future flags previas (incluyendo `v7_startTransition`) son comportamiento por defecto. Las navegaciones ya se envuelven en `startTransition` automáticamente — nada que cambiar.
+
+### 10. `Suspense` boundaries por sección ⏸️ DIFERIDO (requiere refactor)
 - Envolver el `<main>` de [AppShell.tsx](src/components/layout/AppShell.tsx) con un `<Suspense>` que muestre un skeleton específico de la página (no spinner global) → mejora la sensación de velocidad sin acelerar nada en realidad.
+
+**Por qué se difiere:** cada página actualmente renderiza su propia `<AppShell>` internamente, por lo que el `<Suspense>` del [AppRouter.tsx](src/app/router/AppRouter.tsx) captura toda la pantalla (sidebar incluido) al navegar entre rutas. Para mantener el shell estático y sólo intercambiar el `<main>` se necesita:
+
+1. Crear un `AppShellLayout` que renderice `<AppShell>...<Suspense fallback={<MainSkeleton/>}><Outlet/></Suspense>...</AppShell>`.
+2. Convertir las rutas autenticadas a `<Route element={<AppShellLayout/>}>` con `<Outlet/>`.
+3. Quitar el `<AppShell>` de cada página (~25 archivos).
+
+Este refactor toca todas las páginas autenticadas — mejor hacerlo en un PR aislado cuando se aborde la mejora de UX de navegación. Por ahora el `RouteFallback` (con delay 180 ms) ya evita el flash en chunks cacheados.
 
 ---
 
 ## P2 — Específicos de Capacitor / nativo
 
-### 11. `SplashScreen` — control fino del fade
+### 11. `SplashScreen` — control fino del fade ✅ COMPLETADO
 - [capacitor.config.ts:26-33](capacitor.config.ts#L26-L33): `launchAutoHide: false` está bien (manual hide), pero el `fadeOutDuration: 250` se ejecuta apenas el JS arranca, no cuando hay UI.
 - **Acción:** Mover el `SplashScreen.hide()` a un `useEffect` en `App` (o equivalente) que dispare cuando `auth.loading === false` Y el primer render esté pintado (`requestAnimationFrame` doble). Evita el "flash" de pantalla en blanco entre splash y UI.
+
+**Resultado:** combinado con P0 #5. `hideNativeSplash()` en [src/lib/native/bootstrap.ts](src/lib/native/bootstrap.ts) ahora espera dos `requestAnimationFrame` antes de iniciar el fade — garantiza que el primer frame post-splash ya esté pintado.
 
 ### 12. `bundledWebRuntime: false` — ya está ✅
 - Capacitor ya no incluye runtime extra, bien.
@@ -155,28 +184,38 @@ Esto **mejora cache hit rate**: cuando subes una versión nueva, sólo invalida 
 ### 13. `captureInput: true` en Android
 - [capacitor.config.ts:17](capacitor.config.ts#L17): correcto para teclado en formularios. Sin cambios.
 
-### 14. Activos nativos (íconos/splash)
+### 14. Activos nativos (íconos/splash) ✅ VERIFICADO (sin acción)
 - `npm run native:assets` regenera con `@capacitor/assets`. Verificar que las imágenes fuente en [resources/](resources/) sean PNG/SVG optimizados (no fotos sin comprimir). PNG > 200 KB en `resources/` se traduce en builds nativas más pesadas.
 
-### 15. WebView "freeze on background" / pre-warming
+**Resultado:** [resources/](resources/) tiene `icon.png` (19 KB), `icon-background.png` (23 KB), `icon-foreground.png` (19 KB), `splash.png` y `splash-dark.png` (182 KB cada uno). Tamaños razonables para PNGs sin re-compresión adicional valga la pena.
+
+### 15. WebView "freeze on background" / pre-warming ✅ COMPLETADO
 - iOS/Android suspenden el WebView al ir a background. Cuando vuelves, se ejecuta de nuevo el ciclo de auth + queries.
 - **Acción:** Listener `App.addListener('appStateChange', …)` en [src/lib/native/bootstrap.ts](src/lib/native/bootstrap.ts) que invalide solo las queries críticas (notificaciones, dashboard) en lugar de un refetch masivo.
 
-### 16. Realtime de Supabase — coste en batería
+**Resultado:** [src/lib/native/bootstrap.ts](src/lib/native/bootstrap.ts) ahora escucha `appStateChange` y al volver a foreground invalida sólo las queries time-sensitive (`notifications`, `user-dashboard`, `admin-dashboard-stats`, `admin-recent-invoices`) con `refetchType: 'active'`. El resto de la cache mantiene su snapshot hasta que expire `staleTime` — evita el refetch storm en resume.
+
+### 16. Realtime de Supabase — coste en batería ✅ COMPLETADO
 - [src/features/notifications/useNotificationsRealtime.ts](src/features/notifications/useNotificationsRealtime.ts) abre un canal WebSocket persistente.
 - **Acción móvil:** Cerrar el canal cuando la app va a background (`appStateChange === 'inactive'`) y reabrirlo al volver. Mantener WebSocket abierto en background drena batería y, en iOS, suele cortarse igual.
 
-### 17. Probar `FastImage` / decodificación asíncrona
+**Resultado:** [src/features/notifications/useNotificationsRealtime.ts](src/features/notifications/useNotificationsRealtime.ts) refactorizado con helpers `subscribe()`/`unsubscribe()`. Sólo en Capacitor (`isNative()`) registra `appStateChange`: `isActive: false → unsubscribe`, `isActive: true → subscribe`. En web mantiene el canal siempre abierto.
+
+### 17. Probar `FastImage` / decodificación asíncrona ✅ VERIFICADO (sin acción)
 - Las imágenes inline (SVG en `public/brand/`) están bien. Si añades JPGs grandes (avatares, evidencias), usar `loading="lazy"` + `decoding="async"`.
 
-### 18. Habilitar `WKAppBoundDomains` en iOS (si aplica)
+**Resultado:** la app actualmente sólo usa SVGs (en `public/brand/` y `public/icons.svg`) — no hay JPGs/PNGs grandes en runtime. Aplicar cuando se introduzcan avatares o evidencias.
+
+### 18. Habilitar `WKAppBoundDomains` en iOS (si aplica) ✅ N/A
 - Permite que WebView use service workers nativamente en iOS 14+. Útil si llegas al P3 (PWA).
+
+**Resultado:** **no aplica** a esta arquitectura. WKAppBoundDomains habilita SW dentro del WebView de iOS para apps que cargan contenido HTTPS remoto. Capacitor sirve `file://` desde el bundle local — no necesita SW (los assets ya están empaquetados) y por eso el registro del SW está explícitamente bloqueado en Capacitor en [src/main.tsx](src/main.tsx). El SW sólo se activa en la versión web.
 
 ---
 
 ## P3 — PWA / cacheo agresivo (web)
 
-### 19. Service Worker con Workbox
+### 19. Service Worker con Workbox ✅ COMPLETADO
 **Problema:** [public/manifest.webmanifest](public/manifest.webmanifest) existe pero no hay SW. Cada visita = descargar todo el bundle de nuevo.
 
 **Acción:**
@@ -185,14 +224,30 @@ Esto **mejora cache hit rate**: cuando subes una versión nueva, sólo invalida 
 - `registerType: 'autoUpdate'` para que el SW se actualice silenciosamente.
 - **Beneficio:** carga sub-segundo en visitas repetidas; soporte offline parcial.
 
-### 20. `<link rel="modulepreload">` para chunks críticos
+**Resultado:**
+- `vite-plugin-pwa@1.3.0` configurado en [vite.config.ts](vite.config.ts) con `registerType: 'autoUpdate'`, `injectRegister: false`, `manifest: false` (reusa el `public/manifest.webmanifest` existente).
+- Precache de `**/*.{js,css,html,svg,png,woff2,webmanifest}` + `navigateFallback: '/index.html'` para SPA + `runtimeCaching` StaleWhileRevalidate para `og-image.png`.
+- Build genera `dist/sw.js` (6 KB) y `dist/workbox-*.js` (15 KB) con **83 entries precacheadas (~1.25 MB)**.
+- Registro condicional en [src/main.tsx](src/main.tsx): sólo en web (`!isNative()`) y en `PROD` — Capacitor sirve `file://` y no necesita SW.
+- Cambios: [vite.config.ts](vite.config.ts), [src/main.tsx](src/main.tsx), [src/vite-env.d.ts](src/vite-env.d.ts) (+`vite-plugin-pwa/client` types), [package.json](package.json) (+`vite-plugin-pwa`).
+
+### 20. `<link rel="modulepreload">` para chunks críticos ✅ VERIFICADO (sin acción)
 - Vite ya inyecta `modulepreload` para los chunks que el HTML necesita. Verifica en `dist/index.html` que estén los `vendor-react`, `vendor-router` (después de aplicar #2).
 
-### 21. HTTP Headers en Vercel
+**Resultado:** `dist/index.html` ya inyecta `modulepreload` para `vendor-react`, `vendor-supabase`, `vendor-forms`, `vendor-query`, `vendor-icons`, `vendor-capacitor` y el runtime de rolldown. Funciona automáticamente con `manualChunks`.
+
+### 21. HTTP Headers en Vercel ✅ COMPLETADO
 **Acción:** crear/actualizar `vercel.json` con:
 - `Cache-Control: public, max-age=31536000, immutable` para `/assets/*` (los hashes ya invalidan).
 - `Cache-Control: no-cache` para `/index.html`.
 - `Content-Security-Policy` mínimo (defensivo, no de rendimiento, pero aprovecha el toque).
+
+**Resultado:** [vercel.json](vercel.json) creado con:
+- `/assets/*` y `*.woff2` → `max-age=31536000, immutable` (hashes invalidan).
+- `/sw.js` y `/index.html` → `no-cache, no-store, must-revalidate` (deben actualizarse en cada visita).
+- `/manifest.webmanifest` → `max-age=3600` (cambia poco).
+- Headers de seguridad globales: `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: SAMEORIGIN`.
+- Rewrite SPA: `^/((?!api/|assets/|.*\..*).*)` → `/` para que React Router maneje rutas.
 
 ---
 

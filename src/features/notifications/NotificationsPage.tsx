@@ -1,5 +1,6 @@
-import { format, formatDistanceToNow } from 'date-fns'
+import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { formatRelativeEs } from '../../lib/dates/relative'
 import { Bell, CheckCheck, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AppShell } from '../../components/layout/AppShell'
@@ -97,10 +98,7 @@ export function NotificationsPage() {
                       <p className="mt-1 text-xs text-text-sec">{n.body}</p>
                     )}
                     <p className="mt-1.5 text-[11px] text-muted">
-                      {formatDistanceToNow(new Date(n.created_at), {
-                        addSuffix: true,
-                        locale: es,
-                      })}{' '}
+                      {formatRelativeEs(n.created_at, { addSuffix: true })}{' '}
                       ·{' '}
                       {format(new Date(n.created_at), 'd MMM yyyy · HH:mm', {
                         locale: es,

@@ -7,6 +7,7 @@ import {
 } from 'react'
 import type { ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
+import { queryClient } from '../../app/providers/QueryProvider'
 import { hideNativeSplash } from '../../lib/native/bootstrap'
 import { supabase } from '../../lib/supabase/client'
 
@@ -53,6 +54,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       signOut: async () => {
         await supabase.auth.signOut()
+        // Drop in-memory cache and the localStorage-persisted snapshot so
+        // the next user doesn't see the previous user's data.
+        queryClient.clear()
+        try {
+          window.localStorage.removeItem('invoxa-query-cache')
+        } catch {
+          /* storage disabled — ignore */
+        }
       },
     }),
     [session, loading],
