@@ -67,6 +67,8 @@ export function UserDashboardPage() {
 
   const monthCode = format(today, 'MMM', { locale: es }).toUpperCase()
   const yearShort = format(today, 'yy')
+  const monthLabel = format(today, "MMMM 'de' yyyy", { locale: es })
+  const greeting = getGreeting(today)
 
   const hourlyTasksMonth = dashboard?.tasksThisMonth ?? 0
   const hours = dashboard?.hoursThisMonth ?? 0
@@ -85,6 +87,20 @@ export function UserDashboardPage() {
       title={`Hola, ${firstName} 👋`}
       subtitle="Aquí está tu mes en curso"
     >
+      {/* Mobile hero — kicker + display title + subtitle */}
+      <div className="mb-5 md:hidden">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+          {capitalize(monthLabel)}
+        </div>
+        <h2 className="font-display mt-1.5 text-[28px] font-bold leading-[1.05] tracking-[-0.02em] text-text">
+          {greeting}
+          {firstName ? `, ${firstName}` : ''}.
+        </h2>
+        <p className="mt-1.5 text-sm leading-snug text-muted">
+          {heroState.subtitle}
+        </p>
+      </div>
+
       {pendingRequests.length > 0 && (
         <Link
           to="/app/invoices/new"
@@ -138,7 +154,7 @@ export function UserDashboardPage() {
       )}
 
       {/* Hero card */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary-dark p-7 text-white shadow-glow">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary-dark p-5 text-white shadow-glow md:p-7">
         <svg
           width="500"
           height="500"
@@ -204,7 +220,7 @@ export function UserDashboardPage() {
       </div>
 
       {/* Stats */}
-      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-2.5 md:gap-4 xl:grid-cols-4">
         <StatCard
           label="Proyectos activos"
           value={dashboard?.activeProjects ?? '—'}
@@ -498,6 +514,13 @@ function checklistComplete(
   if (!billingComplete) return false
   if (hasHourly && hourlyTasks === 0) return false
   return hasInvoice
+}
+
+function getGreeting(date: Date): string {
+  const hour = date.getHours()
+  if (hour < 12) return 'Buen día'
+  if (hour < 19) return 'Buenas tardes'
+  return 'Buenas noches'
 }
 
 function capitalize(value: string): string {

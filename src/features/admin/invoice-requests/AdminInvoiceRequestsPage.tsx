@@ -60,8 +60,9 @@ export function AdminInvoiceRequestsPage() {
           size="md"
           leftIcon={<Send size={14} />}
           onClick={() => setModalOpen(true)}
+          aria-label="Nueva solicitud"
         >
-          Nueva solicitud
+          <span className="hidden sm:inline">Nueva solicitud</span>
         </Button>
       }
     >
@@ -88,7 +89,33 @@ export function AdminInvoiceRequestsPage() {
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2.5">
-        <div className="flex rounded-xl border border-border bg-surface p-1">
+        {/* Mobile: chips */}
+        <div className="scrollbar-none -mx-4 flex w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 sm:hidden">
+          {(
+            [
+              { value: 'all', label: 'Todas' },
+              { value: 'pending', label: 'Pendientes' },
+              { value: 'completed', label: 'Completadas' },
+              { value: 'expired', label: 'Expiradas' },
+            ] as const
+          ).map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setStatusFilter(opt.value)}
+              className={`flex-shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
+                statusFilter === opt.value
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-border bg-surface text-text-sec hover:border-border-strong'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Desktop: segmented */}
+        <div className="hidden rounded-xl border border-border bg-surface p-1 sm:flex">
           {(
             [
               { value: 'all', label: 'Todas' },

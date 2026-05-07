@@ -26,11 +26,15 @@ export function CardHeader({
   description?: ReactNode
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
+    <div className="flex items-start justify-between gap-3 border-b border-border px-4 py-3.5 md:gap-4 md:px-5 md:py-4">
       <div>
-        <h3 className="font-display text-base font-bold text-text">{title}</h3>
+        <h3 className="font-display text-sm font-bold text-text md:text-base">
+          {title}
+        </h3>
         {description && (
-          <p className="mt-1 text-xs text-muted">{description}</p>
+          <p className="mt-0.5 text-[11px] text-muted md:mt-1 md:text-xs">
+            {description}
+          </p>
         )}
       </div>
       {action}
@@ -45,5 +49,5 @@ export function CardBody({
   children: ReactNode
   className?: string
 }) {
-  return <div className={`p-5 ${className}`}>{children}</div>
+  return <div className={`p-4 md:p-5 ${className}`}>{children}</div>
 }

@@ -41,13 +41,14 @@ export function UsersListPage() {
           size="md"
           leftIcon={<Plus size={15} strokeWidth={2.6} />}
           onClick={() => navigate('/admin/users/new')}
+          aria-label="Invitar usuario"
         >
-          Invitar usuario
+          <span className="hidden sm:inline">Invitar usuario</span>
         </Button>
       }
     >
       <div className="mb-4 flex flex-wrap items-center gap-2.5">
-        <div className="flex h-9 min-w-[260px] flex-1 items-center gap-2 rounded-xl border border-border bg-surface px-3 sm:flex-initial">
+        <div className="flex h-9 w-full flex-1 items-center gap-2 rounded-xl border border-border bg-surface px-3 sm:w-auto sm:min-w-[260px] sm:flex-initial">
           <Search size={14} className="text-muted" />
           <input
             type="text"
@@ -96,60 +97,103 @@ export function UsersListPage() {
             }
           />
         ) : (
-          <div className="overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-subtle text-left text-xs uppercase tracking-wider text-muted">
-                <tr>
-                  <th className="px-5 py-3 font-semibold">Usuario</th>
-                  <th className="px-5 py-3 font-semibold">Rol</th>
-                  <th className="px-5 py-3 font-semibold">Estado</th>
-                  <th className="px-5 py-3 font-semibold">Código</th>
-                  <th className="px-5 py-3 font-semibold">Creado</th>
-                  <th className="w-10 px-5 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filtered.map((u) => (
-                  <tr
-                    key={u.id}
+          <>
+            {/* Mobile: card list */}
+            <ul className="divide-y divide-border md:hidden">
+              {filtered.map((u) => (
+                <li key={u.id}>
+                  <button
+                    type="button"
                     onClick={() => navigate(`/admin/users/${u.id}`)}
-                    className="cursor-pointer transition hover:bg-subtle"
+                    className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition hover:bg-subtle"
                   >
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <Avatar name={u.full_name || u.email} />
-                        <div>
-                          <div className="font-semibold text-text">
-                            {u.full_name || '—'}
-                          </div>
-                          <div className="mt-0.5 text-xs text-muted">
-                            {u.email}
+                    <Avatar name={u.full_name || u.email} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="truncate text-sm font-semibold text-text">
+                          {u.full_name || '—'}
+                        </span>
+                        {u.user_code && (
+                          <span className="rounded bg-subtle px-1.5 py-px font-mono text-[10px] text-text-sec">
+                            {u.user_code}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-0.5 truncate text-[11px] text-muted">
+                        {u.email}
+                      </div>
+                      <div className="mt-2 flex items-center gap-1.5">
+                        <StatusPill status={u.status} />
+                        <Pill tone={u.role === 'admin' ? 'violet' : 'blue'}>
+                          {u.role === 'admin' ? 'Admin' : 'Usuario'}
+                        </Pill>
+                      </div>
+                    </div>
+                    <ChevronRight
+                      size={16}
+                      className="flex-shrink-0 text-muted"
+                    />
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            {/* Desktop: table */}
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full min-w-[640px] text-sm">
+                <thead className="bg-subtle text-left text-xs uppercase tracking-wider text-muted">
+                  <tr>
+                    <th className="px-5 py-3 font-semibold">Usuario</th>
+                    <th className="px-5 py-3 font-semibold">Rol</th>
+                    <th className="px-5 py-3 font-semibold">Estado</th>
+                    <th className="px-5 py-3 font-semibold">Código</th>
+                    <th className="px-5 py-3 font-semibold">Creado</th>
+                    <th className="w-10 px-5 py-3" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filtered.map((u) => (
+                    <tr
+                      key={u.id}
+                      onClick={() => navigate(`/admin/users/${u.id}`)}
+                      className="cursor-pointer transition hover:bg-subtle"
+                    >
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={u.full_name || u.email} />
+                          <div>
+                            <div className="font-semibold text-text">
+                              {u.full_name || '—'}
+                            </div>
+                            <div className="mt-0.5 text-xs text-muted">
+                              {u.email}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <Pill tone={u.role === 'admin' ? 'violet' : 'blue'}>
-                        {u.role === 'admin' ? 'Admin' : 'Usuario'}
-                      </Pill>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <StatusPill status={u.status} />
-                    </td>
-                    <td className="px-5 py-3.5 font-mono text-xs text-text-sec">
-                      {u.user_code ?? '—'}
-                    </td>
-                    <td className="px-5 py-3.5 text-text-sec">
-                      {formatDate(u.created_at)}
-                    </td>
-                    <td className="px-5 py-3.5 text-muted">
-                      <ChevronRight size={16} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <Pill tone={u.role === 'admin' ? 'violet' : 'blue'}>
+                          {u.role === 'admin' ? 'Admin' : 'Usuario'}
+                        </Pill>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <StatusPill status={u.status} />
+                      </td>
+                      <td className="px-5 py-3.5 font-mono text-xs text-text-sec">
+                        {u.user_code ?? '—'}
+                      </td>
+                      <td className="px-5 py-3.5 text-text-sec">
+                        {formatDate(u.created_at)}
+                      </td>
+                      <td className="px-5 py-3.5 text-muted">
+                        <ChevronRight size={16} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </Card>
     </AppShell>
@@ -195,22 +239,43 @@ function SegmentedControl<T extends string>({
   options: { value: T; label: string }[]
 }) {
   return (
-    <div className="flex rounded-xl border border-border bg-surface p-1">
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          onClick={() => onChange(o.value)}
-          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-            value === o.value
-              ? 'bg-primary/10 text-primary'
-              : 'text-text-sec hover:text-text'
-          }`}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
+    <>
+      {/* Mobile: horizontal scrolling chips */}
+      <div className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 sm:hidden">
+        {options.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => onChange(o.value)}
+            className={`flex-shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
+              value === o.value
+                ? 'border-primary bg-primary text-white'
+                : 'border-border bg-surface text-text-sec hover:border-border-strong'
+            }`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Desktop: segmented pill control */}
+      <div className="hidden rounded-xl border border-border bg-surface p-1 sm:flex">
+        {options.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => onChange(o.value)}
+            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+              value === o.value
+                ? 'bg-primary/10 text-primary'
+                : 'text-text-sec hover:text-text'
+            }`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </>
   )
 }
 

@@ -1,6 +1,8 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useProfile } from '../../features/auth/useProfile'
 import { useNotificationsRealtime } from '../../features/notifications/useNotificationsRealtime'
+import { MobileBottomNav } from './MobileBottomNav'
 import { Sidebar } from './Sidebar'
 import { Topbar } from './Topbar'
 
@@ -20,7 +22,24 @@ export function AppShell({
   children: ReactNode
 }) {
   const { data: profile } = useProfile()
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const location = useLocation()
   useNotificationsRealtime()
+
+  // Close drawer when route changes.
+  useEffect(() => {
+    setDrawerOpen(false)
+  }, [location.pathname])
+
+  // Lock body scroll while drawer is open.
+  useEffect(() => {
+    if (!drawerOpen) return
+    const original = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = original
+    }
+  }, [drawerOpen])
 
   if (!profile) {
     return (
@@ -38,18 +57,43 @@ export function AppShell({
         paddingBottom: 'var(--safe-area-bottom)',
       }}
     >
-      <Sidebar profile={profile} />
+      {/* Desktop sidebar (always visible from md up) */}
+      <Sidebar profile={profile} className="hidden md:flex" />
+
+      {/* Mobile drawer overlay */}
+      {drawerOpen && (
+        <>
+          <button
+            type="button"
+            aria-label="Cerrar menú"
+            className="fixed inset-0 z-40 bg-text/40 backdrop-blur-sm md:hidden"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <div className="fixed inset-y-0 left-0 z-50 flex md:hidden">
+            <Sidebar
+              profile={profile}
+              onNavigate={() => setDrawerOpen(false)}
+              showCloseButton
+              className="shadow-xl"
+            />
+          </div>
+        </>
+      )}
+
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
           title={title}
           subtitle={subtitle}
           rightAction={rightAction}
+          onOpenMenu={() => setDrawerOpen(true)}
         />
-        <main className="scrollbar-thin flex-1 overflow-y-auto p-6">
+        <main
+          className="scrollbar-thin flex-1 overflow-y-auto p-4 pb-[calc(64px+env(safe-area-inset-bottom))] md:p-6 md:pb-6"
+        >
           {breadcrumbs && breadcrumbs.length > 0 && (
             <nav
               aria-label="Breadcrumb"
-              className="mb-4 flex items-center gap-1.5 text-[11px] text-muted"
+              className="mb-3 flex items-center gap-1.5 text-[11px] text-muted md:mb-4"
             >
               {breadcrumbs.map((c, i) => (
                 <span key={i} className="flex items-center gap-1.5">
@@ -62,6 +106,8 @@ export function AppShell({
           {children}
         </main>
       </div>
+
+      <MobileBottomNav profile={profile} />
     </div>
   )
 }

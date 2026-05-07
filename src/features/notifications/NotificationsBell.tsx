@@ -72,7 +72,7 @@ export function NotificationsBell({ profile }: { profile: Profile }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-11 z-50 w-[360px] overflow-hidden rounded-2xl border border-border bg-surface shadow-xl">
+        <div className="fixed inset-x-2 top-[calc(var(--safe-area-top)+56px)] z-50 max-h-[80vh] overflow-hidden rounded-2xl border border-border bg-surface shadow-xl sm:absolute sm:inset-x-auto sm:right-0 sm:top-11 sm:w-[360px]">
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <div>
               <div className="text-sm font-bold text-text">Notificaciones</div>

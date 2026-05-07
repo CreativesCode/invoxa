@@ -45,8 +45,9 @@ export function InvoicesListPage() {
           size="md"
           leftIcon={<Plus size={15} strokeWidth={2.4} />}
           onClick={() => navigate('/app/invoices/new')}
+          aria-label="Generar factura"
         >
-          Generar factura
+          <span className="hidden sm:inline">Generar factura</span>
         </Button>
       }
     >

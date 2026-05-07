@@ -123,7 +123,7 @@ export function AdminInvoicesListPage() {
     >
       {/* Search + clear */}
       <div className="mb-3 flex flex-wrap items-center gap-2.5">
-        <div className="flex h-9 min-w-[260px] flex-1 items-center gap-2 rounded-xl border border-border bg-surface px-3 sm:flex-initial">
+        <div className="flex h-9 w-full flex-1 items-center gap-2 rounded-xl border border-border bg-surface px-3 sm:w-auto sm:min-w-[260px] sm:flex-initial">
           <Search size={14} className="text-muted" />
           <input
             type="text"
@@ -202,29 +202,43 @@ export function AdminInvoicesListPage() {
         ) : invoices.length === 0 ? (
           <EmptyState hasFilter={hasActiveFilters} />
         ) : (
-          <div className="overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-subtle text-left text-xs uppercase tracking-wider text-muted">
-                <tr>
-                  <th className="px-5 py-3 font-semibold">Número</th>
-                  <th className="px-5 py-3 font-semibold">Colaborador</th>
-                  <th className="px-5 py-3 font-semibold">Periodo</th>
-                  <th className="px-5 py-3 font-semibold">Estado</th>
-                  <th className="px-5 py-3 text-right font-semibold">Total</th>
-                  <th className="w-10 px-5 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {invoices.map((inv) => (
-                  <InvoiceRow
-                    key={inv.id}
-                    invoice={inv}
-                    onClick={() => navigate(`/admin/invoices/${inv.id}`)}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <>
+            {/* Mobile: card list */}
+            <ul className="divide-y divide-border md:hidden">
+              {invoices.map((inv) => (
+                <InvoiceCard
+                  key={inv.id}
+                  invoice={inv}
+                  onClick={() => navigate(`/admin/invoices/${inv.id}`)}
+                />
+              ))}
+            </ul>
+
+            {/* Desktop: table */}
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full min-w-[720px] text-sm">
+                <thead className="bg-subtle text-left text-xs uppercase tracking-wider text-muted">
+                  <tr>
+                    <th className="px-5 py-3 font-semibold">Número</th>
+                    <th className="px-5 py-3 font-semibold">Colaborador</th>
+                    <th className="px-5 py-3 font-semibold">Periodo</th>
+                    <th className="px-5 py-3 font-semibold">Estado</th>
+                    <th className="px-5 py-3 text-right font-semibold">Total</th>
+                    <th className="w-10 px-5 py-3" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {invoices.map((inv) => (
+                    <InvoiceRow
+                      key={inv.id}
+                      invoice={inv}
+                      onClick={() => navigate(`/admin/invoices/${inv.id}`)}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </Card>
     </AppShell>
@@ -282,6 +296,53 @@ function InvoiceRow({
         <ChevronRight size={16} />
       </td>
     </tr>
+  )
+}
+
+function InvoiceCard({
+  invoice,
+  onClick,
+}: {
+  invoice: InvoiceWithUser
+  onClick: () => void
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex w-full items-start gap-3 px-4 py-3.5 text-left transition hover:bg-subtle"
+      >
+        <Avatar name={invoice.user?.full_name || invoice.user?.email || '?'} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="font-mono text-[10.5px] uppercase tracking-wide text-muted">
+                {invoice.invoice_number}
+              </div>
+              <div className="mt-0.5 truncate text-sm font-semibold text-text">
+                {invoice.user?.full_name || invoice.user?.email || '—'}
+              </div>
+            </div>
+            <Pill tone={STATUS_TONE[invoice.status]} dot>
+              {STATUS_LABEL[invoice.status]}
+            </Pill>
+          </div>
+          <div className="mt-2 flex items-end justify-between gap-2">
+            <span className="text-[11px] capitalize text-muted">
+              {format(
+                new Date(invoice.period_start + 'T00:00:00'),
+                "MMM yyyy",
+                { locale: es },
+              )}
+            </span>
+            <span className="font-display tabular text-sm font-semibold text-text">
+              {formatCurrency(invoice.total, invoice.currency)}
+            </span>
+          </div>
+        </div>
+      </button>
+    </li>
   )
 }
 

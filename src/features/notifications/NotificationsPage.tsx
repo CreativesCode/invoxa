@@ -46,8 +46,9 @@ export function NotificationsPage() {
             size="sm"
             onClick={() => markAllRead.mutate()}
             leftIcon={<CheckCheck size={14} />}
+            aria-label="Marcar todo como leído"
           >
-            Marcar todo como leído
+            <span className="hidden sm:inline">Marcar todo como leído</span>
           </Button>
         ) : undefined
       }

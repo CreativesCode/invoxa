@@ -59,8 +59,9 @@ export function ProjectMembersPage() {
           leftIcon={<Plus size={15} strokeWidth={2.6} />}
           onClick={() => navigate(`/admin/projects/${id}/members/new`)}
           disabled={!id}
+          aria-label="Asignar colaborador"
         >
-          Asignar colaborador
+          <span className="hidden sm:inline">Asignar colaborador</span>
         </Button>
       }
     >
@@ -129,8 +130,88 @@ function MembersTable({
   readOnly?: boolean
 }) {
   return (
-    <div className="overflow-hidden">
-      <table className="w-full text-sm">
+    <>
+      {/* Mobile: card list */}
+      <ul className="divide-y divide-border md:hidden">
+        {members.map((m) => (
+          <li key={m.assignment.id} className="px-4 py-4">
+            <div className="flex items-start gap-3">
+              <Avatar name={m.user.full_name || m.user.email} />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-semibold text-text">
+                      {m.user.full_name || '—'}
+                    </div>
+                    <div className="mt-0.5 truncate text-[11px] text-muted">
+                      {m.user.email}
+                    </div>
+                  </div>
+                  {m.compensation && (
+                    <Pill
+                      tone={
+                        m.compensation.payment_type === 'hourly'
+                          ? 'blue'
+                          : 'violet'
+                      }
+                    >
+                      {m.compensation.payment_type === 'hourly'
+                        ? 'Por hora'
+                        : 'Fijo'}
+                    </Pill>
+                  )}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-text-sec">
+                  {m.compensation && (
+                    <span className="inline-flex items-center gap-1">
+                      {m.compensation.payment_type === 'hourly' ? (
+                        <Clock size={12} className="text-muted" />
+                      ) : (
+                        <DollarSign size={12} className="text-muted" />
+                      )}
+                      {formatRate(m.compensation)} {m.compensation.currency}
+                      {m.compensation.payment_type === 'hourly' && '/h'}
+                    </span>
+                  )}
+                  <span className="text-muted">
+                    Desde {formatDate(m.assignment.start_date)}
+                  </span>
+                  {m.assignment.end_date && (
+                    <span className="text-muted">
+                      · Hasta {formatDate(m.assignment.end_date)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            {!readOnly && (
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => onEdit?.(m)}
+                  className="flex-1 rounded-lg border border-border bg-surface py-2 text-xs font-semibold text-text-sec hover:bg-subtle"
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onEnd?.(m)}
+                  disabled={isEnding}
+                  className="flex-1 rounded-lg border border-red/40 bg-surface py-2 text-xs font-semibold text-red hover:bg-red/5 disabled:opacity-50"
+                >
+                  <span className="inline-flex items-center justify-center gap-1">
+                    <UserMinus size={12} /> Finalizar
+                  </span>
+                </button>
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      {/* Desktop: table */}
+      <div className="hidden overflow-x-auto md:block">
+        <table className="w-full min-w-[720px] text-sm">
         <thead className="bg-subtle text-left text-xs uppercase tracking-wider text-muted">
           <tr>
             <th className="px-5 py-3 font-semibold">Colaborador</th>
@@ -225,6 +306,7 @@ function MembersTable({
         </tbody>
       </table>
     </div>
+    </>
   )
 }
 

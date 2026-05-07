@@ -97,8 +97,9 @@ export function TasksListPage() {
           size="md"
           leftIcon={<Plus size={15} strokeWidth={2.4} />}
           onClick={() => navigate('/app/tasks/new')}
+          aria-label="Nueva tarea"
         >
-          Nueva tarea
+          <span className="hidden sm:inline">Nueva tarea</span>
         </Button>
       }
     >

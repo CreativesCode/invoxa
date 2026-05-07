@@ -1,6 +1,7 @@
-import { format } from 'date-fns'
+import { endOfMonth, format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
+  ArrowRight,
   CheckCircle2,
   ChevronRight,
   Clock,
@@ -17,6 +18,7 @@ import { Button } from '../../../components/ui/Button'
 import { Card, CardBody, CardHeader } from '../../../components/ui/Card'
 import { Pill } from '../../../components/ui/Pill'
 import { StatCard } from '../../../components/ui/StatCard'
+import { useProfile } from '../../auth/useProfile'
 import type { InvoiceStatus, InvoiceWithUser } from '../../../types/invoice'
 import { useInvoiceNumberChangeRequests } from '../../invoiceNumberChange/queries'
 import { useAdminDashboardStats, useRecentInvoices } from './queries'
@@ -53,8 +55,15 @@ export function AdminDashboardPage() {
   const { data: recentInvoices = [] } = useRecentInvoices(6)
   const { data: pendingNumberRequests = [] } =
     useInvoiceNumberChangeRequests('pending')
+  const { data: profile } = useProfile()
 
   const monthLabel = format(today, "MMMM yyyy", { locale: es })
+  const monthCloseLabel = format(endOfMonth(today), "d 'de' MMM · 23:59", {
+    locale: es,
+  })
+  const firstName = (profile?.full_name || profile?.email || '').split(' ')[0]
+  const greeting = getGreeting(today)
+  const pendingCount = stats?.pendingInvoiceRequests ?? 0
 
   return (
     <AppShell
@@ -66,13 +75,39 @@ export function AdminDashboardPage() {
           size="md"
           leftIcon={<Plus size={15} strokeWidth={2.6} />}
           onClick={() => navigate('/admin/users/new')}
+          aria-label="Invitar usuario"
         >
-          Invitar usuario
+          <span className="hidden sm:inline">Invitar usuario</span>
         </Button>
       }
     >
+      {/* Mobile hero — kicker + display title + subtitle */}
+      <div className="mb-5 md:hidden">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+          {capitalize(monthLabel)}
+        </div>
+        <h2 className="font-display mt-1.5 text-[28px] font-bold leading-[1.05] tracking-[-0.02em] text-text">
+          {greeting}
+          {firstName ? `, ${firstName}` : ''}.
+        </h2>
+        <p className="mt-1.5 text-sm leading-snug text-muted">
+          {pendingCount > 0 ? (
+            <>
+              Faltan{' '}
+              <span className="font-semibold text-primary">
+                {pendingCount}{' '}
+                {pendingCount === 1 ? 'factura' : 'facturas'}
+              </span>{' '}
+              por recibir este mes.
+            </>
+          ) : (
+            'Todo al día. No hay solicitudes pendientes.'
+          )}
+        </p>
+      </div>
+
       {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 md:gap-4 xl:grid-cols-4">
         <StatCard
           label="Colaboradores activos"
           value={stats?.activeUsers ?? '—'}
@@ -106,6 +141,30 @@ export function AdminDashboardPage() {
           tone="green"
         />
       </div>
+
+      {/* Mobile-only CTA: deadline card */}
+      {pendingCount > 0 && (
+        <Link
+          to="/admin/invoice-requests"
+          className="mt-5 block overflow-hidden rounded-2xl bg-text p-5 text-white shadow-card md:hidden"
+        >
+          <div className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-white/60">
+            Cierre próximo
+          </div>
+          <div className="font-display mt-1.5 text-[22px] font-bold tracking-tightish capitalize">
+            {monthCloseLabel}
+          </div>
+          <p className="mt-2 text-[13px] leading-relaxed text-white/70">
+            Solicita las facturas pendientes de los {pendingCount}{' '}
+            {pendingCount === 1 ? 'colaborador' : 'colaboradores'} que aún no
+            han enviado la suya.
+          </p>
+          <div className="mt-4 inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-white">
+            <Send size={14} /> Solicitar a todos
+            <ArrowRight size={14} />
+          </div>
+        </Link>
+      )}
 
       {/* Two columns */}
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -325,6 +384,13 @@ function getInitials(name: string): string {
 
 function capitalize(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+function getGreeting(date: Date): string {
+  const hour = date.getHours()
+  if (hour < 12) return 'Buen día'
+  if (hour < 19) return 'Buenas tardes'
+  return 'Buenas noches'
 }
 
 function formatCurrency(value: number, currency: string) {

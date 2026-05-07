@@ -4,12 +4,12 @@ import {
   FileText,
   FolderKanban,
   Home,
-  Menu,
   ReceiptText,
   Send,
   Settings,
   UserSquare,
   Users,
+  X,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
@@ -88,24 +88,44 @@ const userSections: NavSection[] = [
   },
 ]
 
-export function Sidebar({ profile }: { profile: Profile }) {
+export function Sidebar({
+  profile,
+  className = '',
+  onNavigate,
+  showCloseButton = false,
+}: {
+  profile: Profile
+  className?: string
+  onNavigate?: () => void
+  showCloseButton?: boolean
+}) {
   const sections = profile.role === 'admin' ? adminSections : userSections
   const initials = getInitials(profile.full_name || profile.email)
 
   return (
-    <aside className="flex h-screen w-[252px] flex-shrink-0 flex-col border-r border-border bg-bg">
-      {/* Logo + menu toggle */}
+    <aside
+      className={`flex h-full w-[252px] flex-shrink-0 flex-col border-r border-border bg-bg ${className}`}
+    >
+      {/* Logo + close (mobile) */}
       <div className="flex items-center justify-between px-4 py-5">
-        <Link to="/" className="flex items-center" aria-label="Invoxa">
+        <Link
+          to="/"
+          className="flex items-center"
+          aria-label="Invoxa"
+          onClick={onNavigate}
+        >
           <img src={logoHorizontal} alt="Invoxa" className="h-12 w-auto" />
         </Link>
-        <button
-          type="button"
-          className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-subtle hover:text-text-sec"
-          aria-label="Toggle menu"
-        >
-          <Menu size={14} />
-        </button>
+        {showCloseButton && (
+          <button
+            type="button"
+            onClick={onNavigate}
+            className="flex h-8 w-8 items-center justify-center rounded-md text-muted hover:bg-subtle hover:text-text-sec"
+            aria-label="Cerrar menú"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
 
       {/* Org card */}
@@ -127,7 +147,11 @@ export function Sidebar({ profile }: { profile: Profile }) {
       {/* Sections */}
       <nav className="scrollbar-none flex-1 overflow-y-auto px-2.5 pb-2">
         {sections.map((section) => (
-          <SidebarSection key={section.title} section={section} />
+          <SidebarSection
+            key={section.title}
+            section={section}
+            onNavigate={onNavigate}
+          />
         ))}
       </nav>
 
@@ -154,7 +178,13 @@ export function Sidebar({ profile }: { profile: Profile }) {
   )
 }
 
-function SidebarSection({ section }: { section: NavSection }) {
+function SidebarSection({
+  section,
+  onNavigate,
+}: {
+  section: NavSection
+  onNavigate?: () => void
+}) {
   const location = useLocation()
   return (
     <div className="mb-4">
@@ -167,6 +197,7 @@ function SidebarSection({ section }: { section: NavSection }) {
           <Link
             key={item.to}
             to={item.to}
+            onClick={onNavigate}
             className={`relative my-px flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition ${
               active
                 ? 'bg-primary/10 font-semibold text-primary'

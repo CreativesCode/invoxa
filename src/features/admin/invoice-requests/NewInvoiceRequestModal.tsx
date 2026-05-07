@@ -1,6 +1,6 @@
 import { endOfMonth, format, startOfMonth } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Send, Users, X } from 'lucide-react'
+import { Check, Send, Users, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Button } from '../../../components/ui/Button'
 import { MonthPicker } from '../../../components/ui/MonthPicker'
@@ -182,34 +182,50 @@ export function NewInvoiceRequestModal({
                     onChange={(e) => setSearch(e.target.value)}
                     className="mb-2 h-9 rounded-xl border border-border bg-bg px-3 text-sm text-text outline-none placeholder:text-muted focus:border-primary focus:ring-4 focus:ring-primary/20"
                   />
-                  <div className="max-h-[260px] overflow-y-auto rounded-xl border border-border">
+                  <div className="max-h-[260px] overflow-y-auto rounded-xl">
                     {filteredUsers.length === 0 ? (
                       <p className="px-3 py-4 text-center text-xs text-muted">
                         No hay colaboradores que coincidan.
                       </p>
                     ) : (
-                      <ul className="divide-y divide-border">
-                        {filteredUsers.map((u) => (
-                          <li key={u.id}>
-                            <label className="flex cursor-pointer items-start gap-3 px-3 py-2.5 hover:bg-subtle">
-                              <input
-                                type="checkbox"
-                                checked={selectedIds.includes(u.id)}
-                                onChange={() => toggleUser(u.id)}
-                                className="mt-0.5 h-4 w-4 accent-primary"
-                              />
-                              <div className="min-w-0 flex-1">
-                                <div className="text-sm font-semibold text-text">
-                                  {u.full_name || u.email}
+                      <ul className="flex flex-col gap-2">
+                        {filteredUsers.map((u) => {
+                          const checked = selectedIds.includes(u.id)
+                          return (
+                            <li key={u.id}>
+                              <button
+                                type="button"
+                                onClick={() => toggleUser(u.id)}
+                                className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition ${
+                                  checked
+                                    ? 'border-primary bg-primary-tint'
+                                    : 'border-border bg-bg hover:border-border-strong'
+                                }`}
+                              >
+                                <span
+                                  className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md border-[1.5px] transition ${
+                                    checked
+                                      ? 'border-primary bg-primary text-white'
+                                      : 'border-border-strong bg-surface'
+                                  }`}
+                                >
+                                  {checked && (
+                                    <Check size={13} strokeWidth={3} />
+                                  )}
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                  <div className="truncate text-sm font-semibold text-text">
+                                    {u.full_name || u.email}
+                                  </div>
+                                  <div className="mt-0.5 truncate text-xs text-muted">
+                                    {u.email}
+                                    {u.user_code ? ` · ${u.user_code}` : ''}
+                                  </div>
                                 </div>
-                                <div className="mt-0.5 text-xs text-muted">
-                                  {u.email}
-                                  {u.user_code ? ` · ${u.user_code}` : ''}
-                                </div>
-                              </div>
-                            </label>
-                          </li>
-                        ))}
+                              </button>
+                            </li>
+                          )
+                        })}
                       </ul>
                     )}
                   </div>
