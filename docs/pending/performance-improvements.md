@@ -253,32 +253,69 @@ Este refactor toca todas las páginas autenticadas — mejor hacerlo en un PR ai
 
 ## P4 — Renderizado y React (esfuerzo variable)
 
-### 22. `useMemo` / `useCallback` en lugares calientes
+> **Política para P4:** todas estas optimizaciones requieren **medir primero** con React DevTools Profiler (o el panel Performance del navegador). Memoizar/virtualizar a ciegas suele añadir complejidad sin beneficio. Aplicar sólo cuando el profiler muestre re-renders evitables o long tasks > 50 ms.
+
+### 22. `useMemo` / `useCallback` en lugares calientes ⏸️ DIFERIDO (medir antes)
 - Auditar [src/features/landing/LandingPage.tsx](src/features/landing/LandingPage.tsx) (1233 líneas, varios `useEffect`/`IntersectionObserver`). Si la animación reveal causa jank, considerar `react-intersection-observer` (más eficiente que la implementación manual).
 
-### 23. Virtualización de listas largas
+**Estado actual:** la landing usa un `useReveal` propio con `IntersectionObserver` que se desconecta apenas dispara — ya es eficiente. No tocar sin evidencia de jank.
+
+### 23. Virtualización de listas largas ⏸️ DIFERIDO (depende del volumen real)
 - Si [InvoicesListPage](src/features/user/invoices/InvoicesListPage.tsx), [TasksListPage](src/features/user/tasks/TasksListPage.tsx), o `UsersListPage` superan ~50 filas en producción, usar `@tanstack/react-virtual` (~5 KB).
 
-### 24. `React.memo` en celdas de listas
+**Cuándo aplicar:** cuando una lista en producción supere consistentemente las ~50 filas o el scroll empiece a sentirse pesado. Por ahora no es necesario.
+
+### 24. `React.memo` en celdas de listas ⏸️ DIFERIDO (medir antes)
 - Sólo después de medir con React DevTools Profiler. No memoizar a ciegas.
 
-### 25. Debounce de búsquedas/filtros
+### 25. Debounce de búsquedas/filtros ✅ VERIFICADO (sin acción)
 - Cualquier input que dispare query → `useDeferredValue` (React 19 nativo, ya está disponible) en lugar de `setTimeout` manual.
+
+**Estado actual:** los inputs de búsqueda en [ProjectsListPage.tsx](src/features/admin/projects/ProjectsListPage.tsx), [UsersListPage.tsx](src/features/admin/users/UsersListPage.tsx), [AdminInvoicesListPage.tsx](src/features/admin/invoices/AdminInvoicesListPage.tsx) filtran client-side con `useMemo` sobre listas pequeñas — sin red, sin jank perceptible. Aplicar `useDeferredValue` sólo si crecen mucho los datasets.
 
 ---
 
 ## P5 — Observabilidad (sin esto no sabes si ganaste)
 
-### 26. Web Vitals
+### 26. Web Vitals ✅ COMPLETADO
 - Añadir `web-vitals` (~2 KB) y enviar a Vercel Analytics o a una tabla de Supabase.
 - Métricas mínimas: **LCP, INP, CLS, TTFB**. Sin estos números, las optimizaciones son a ciegas.
 
-### 27. Bundle visualizer
+**Resultado:** módulo en [src/lib/observability/webVitals.ts](src/lib/observability/webVitals.ts) reporta `LCP`, `CLS`, `INP`, `TTFB` vía `web-vitals@5`. Se invoca con `import()` dinámico en [src/main.tsx](src/main.tsx) sólo en web (no en Capacitor) → cargado tras el hidrate, no penaliza TTFB. Por defecto loguea a `console.info`. Para enviar a un endpoint real, pasar un `dispatch` propio: `reportWebVitals((m) => fetch('/api/vitals', { method: 'POST', body: JSON.stringify(m) }))`. Toggle de logging extra: `VITE_LOG_WEB_VITALS=1`.
+
+### 27. Bundle visualizer ✅ COMPLETADO
 - `rollup-plugin-visualizer` en `vite.config.ts` (modo dev). Genera `stats.html` por cada build → ves exactamente qué pesa.
 - **Hacer esto antes de empezar P0** para tener línea base.
 
-### 28. Lighthouse CI
+**Resultado:** `rollup-plugin-visualizer` configurado en [vite.config.ts](vite.config.ts) detrás de la env var `ANALYZE`. CI builds normales no pagan el costo. Para analizar:
+
+```bash
+ANALYZE=1 npm run build
+# Abrir dist/stats.html — treemap interactivo con tamaños raw, gzip y brotli
+```
+
+### 28. Lighthouse CI ⏸️ DIFERIDO (requiere decisión de CI)
 - Correr Lighthouse contra una preview de Vercel en cada PR. Falla si LCP > 2.5 s o si el bundle inicial crece > N KB.
+
+**Por qué se difiere:** depende de la decisión de CI del equipo (GitHub Actions, Vercel Checks, etc.). Esqueleto sugerido para `.github/workflows/lighthouse.yml`:
+
+```yaml
+name: Lighthouse
+on: pull_request
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: ${{ steps.preview.outputs.url }}
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          configPath: ./lighthouserc.json
+```
+
+Y un `lighthouserc.json` con `assertions` para LCP < 2500 ms, INP < 200 ms, etc. Activar cuando el equipo decida la pipeline.
 
 ---
 

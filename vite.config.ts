@@ -2,11 +2,25 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { compression } from 'vite-plugin-compression2'
 import { VitePWA } from 'vite-plugin-pwa'
+import { visualizer } from 'rollup-plugin-visualizer'
+
+// Set ANALYZE=1 before `npm run build` to emit dist/stats.html with a
+// treemap of the bundle. Off by default so CI builds don't pay the cost.
+const enableVisualizer = process.env.ANALYZE === '1'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
+    enableVisualizer
+      ? visualizer({
+          filename: 'dist/stats.html',
+          template: 'treemap',
+          gzipSize: true,
+          brotliSize: true,
+          open: false,
+        })
+      : null,
     // PWA: precache the built assets so repeat visits load offline / from
     // disk. The runtime registration is gated by `isNative()` in main.tsx —
     // we never register the SW inside Capacitor (file:// scheme + SW don't

@@ -28,3 +28,11 @@ if (!isNative() && 'serviceWorker' in navigator && import.meta.env.PROD) {
     registerSW({ immediate: true })
   })
 }
+
+// Report Core Web Vitals on web only — Capacitor numbers don't match the
+// browser metric definitions (no real navigation, no paint timing equivalent).
+if (!isNative()) {
+  void import('./lib/observability/webVitals').then(({ reportWebVitals }) => {
+    reportWebVitals()
+  })
+}
