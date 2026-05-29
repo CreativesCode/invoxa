@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../../lib/supabase/client'
+import { extractFunctionError } from '../../../lib/supabase/functionError'
 import type { Project } from '../../../types/project'
 import type { Task, TaskInput, TaskWithProject } from '../../../types/task'
 
@@ -148,4 +149,55 @@ export function useDeleteTask() {
       qc.invalidateQueries({ queryKey: [TASKS_KEY] })
     },
   })
+}
+
+// =============================================================================
+// Tasks report PDF — worked-hours justification grouped by project
+// =============================================================================
+
+type TasksReportPdfResponse = {
+  success: boolean
+  pdf_path: string
+}
+
+/**
+ * Generates (server-side, via Edge Function) the monthly tasks report PDF for
+ * the current user — all tasks in the period, grouped into one section per
+ * project — and returns its storage path in the `reports` bucket. Mirrors the
+ * invoice PDF flow.
+ */
+export function useGenerateTasksReportPdf() {
+  return useMutation<
+    TasksReportPdfResponse,
+    Error,
+    { periodStart: string; periodEnd: string }
+  >({
+    mutationFn: async ({ periodStart, periodEnd }) => {
+      const { data, error } =
+        await supabase.functions.invoke<TasksReportPdfResponse>(
+          'generate-tasks-report-pdf',
+          {
+            body: { period_start: periodStart, period_end: periodEnd },
+          },
+        )
+      if (error) throw new Error(await extractFunctionError(error))
+      if (!data) throw new Error('Sin respuesta del servidor')
+      return data
+    },
+  })
+}
+
+/**
+ * Creates a short-lived signed URL for a tasks report PDF stored in the
+ * `reports` private bucket. Returns null if it couldn't be signed.
+ */
+export async function getTasksReportPdfSignedUrl(
+  pdfPath: string,
+  expiresInSeconds = 60,
+): Promise<string | null> {
+  const { data, error } = await supabase.storage
+    .from('reports')
+    .createSignedUrl(pdfPath, expiresInSeconds)
+  if (error || !data) return null
+  return data.signedUrl
 }

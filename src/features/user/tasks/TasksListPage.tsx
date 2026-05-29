@@ -3,6 +3,7 @@ import { es } from 'date-fns/locale'
 import {
   ChevronRight,
   Clock,
+  Download,
   FileText,
   Lock,
   Plus,
@@ -16,8 +17,14 @@ import { Card, CardBody, CardHeader } from '../../../components/ui/Card'
 import { MonthPicker } from '../../../components/ui/MonthPicker'
 import { Pill } from '../../../components/ui/Pill'
 import { StatCard } from '../../../components/ui/StatCard'
+import { openExternalUrl } from '../../../lib/native/openUrl'
 import type { TaskWithProject } from '../../../types/task'
-import { useMyHourlyProjects, useMyTasks } from './queries'
+import {
+  getTasksReportPdfSignedUrl,
+  useGenerateTasksReportPdf,
+  useMyHourlyProjects,
+  useMyTasks,
+} from './queries'
 
 export function TasksListPage() {
   const navigate = useNavigate()
@@ -53,6 +60,35 @@ export function TasksListPage() {
       pendingHours: pending.reduce((sum, t) => sum + Number(t.hours), 0),
     }
   }, [tasks])
+
+  // Monthly report PDF (worked-hours justification). Always covers the whole
+  // month across every project — the active project filter doesn't apply.
+  const generateReport = useGenerateTasksReportPdf()
+  const [pdfBusy, setPdfBusy] = useState(false)
+  const [pdfError, setPdfError] = useState<string | null>(null)
+
+  const handleDownloadPdf = async () => {
+    setPdfError(null)
+    setPdfBusy(true)
+    try {
+      const { pdf_path } = await generateReport.mutateAsync({
+        periodStart,
+        periodEnd,
+      })
+      const url = await getTasksReportPdfSignedUrl(pdf_path, 60)
+      if (!url) {
+        setPdfError('No se pudo abrir el PDF. Inténtalo de nuevo.')
+        return
+      }
+      await openExternalUrl(url)
+    } catch (err) {
+      setPdfError(
+        err instanceof Error ? err.message : 'Error al generar el PDF.',
+      )
+    } finally {
+      setPdfBusy(false)
+    }
+  }
 
   // No hourly projects → tasks module doesn't apply.
   if (!loadingProjects && hourlyProjects.length === 0) {
@@ -93,16 +129,36 @@ export function TasksListPage() {
       subtitle={`Periodo: ${format(period, "MMMM 'de' yyyy", { locale: es })}`}
       breadcrumbs={[{ label: 'Mi facturación' }, { label: 'Tareas' }]}
       rightAction={
-        <Button
-          size="md"
-          leftIcon={<Plus size={15} strokeWidth={2.4} />}
-          onClick={() => navigate('/app/tasks/new')}
-          aria-label="Nueva tarea"
-        >
-          <span className="hidden sm:inline">Nueva tarea</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="md"
+            leftIcon={<Download size={15} strokeWidth={2.4} />}
+            onClick={handleDownloadPdf}
+            disabled={pdfBusy || loadingTasks || totals.total === 0}
+            aria-label="Descargar reporte en PDF"
+          >
+            <span className="hidden sm:inline">
+              {pdfBusy ? 'Generando…' : 'Descargar PDF'}
+            </span>
+          </Button>
+          <Button
+            size="md"
+            leftIcon={<Plus size={15} strokeWidth={2.4} />}
+            onClick={() => navigate('/app/tasks/new')}
+            aria-label="Nueva tarea"
+          >
+            <span className="hidden sm:inline">Nueva tarea</span>
+          </Button>
+        </div>
       }
     >
+      {pdfError && (
+        <div className="mb-4 rounded-xl border border-red/30 bg-red/10 px-4 py-3 text-sm text-red">
+          {pdfError}
+        </div>
+      )}
+
       {/* Filters */}
       <div className="mb-4 flex flex-wrap items-center gap-2.5">
         <MonthPicker value={period} onChange={setPeriod} />
