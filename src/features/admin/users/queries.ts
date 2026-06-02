@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../../lib/supabase/client'
+import { extractFunctionError } from '../../../lib/supabase/functionError'
 import type { Profile, UserRole, UserStatus } from '../../../types/profile'
 
 const USERS_KEY = ['users'] as const
@@ -69,6 +70,38 @@ export function useUpdateUserRole() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: USERS_KEY })
+    },
+  })
+}
+
+type DeleteUserResponse = {
+  success: boolean
+  user_id: string
+}
+
+// Permanently deletes a user via the `delete-user` Edge Function. The function
+// verifies the caller is admin and blocks deletion when the user has financial
+// records (invoices, invoice requests, number-change history) to preserve
+// accounting traceability — those errors surface as the thrown message.
+export function useDeleteUser() {
+  const qc = useQueryClient()
+  return useMutation<DeleteUserResponse, Error, string>({
+    mutationFn: async (id) => {
+      const { data, error } =
+        await supabase.functions.invoke<DeleteUserResponse>('delete-user', {
+          body: { id },
+        })
+
+      if (error) {
+        throw new Error(await extractFunctionError(error))
+      }
+      if (!data) throw new Error('Sin respuesta del servidor')
+      return data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: USERS_KEY })
+      qc.invalidateQueries({ queryKey: ['projects'] })
+      qc.invalidateQueries({ queryKey: ['project-members'] })
     },
   })
 }

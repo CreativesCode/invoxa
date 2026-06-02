@@ -1,10 +1,13 @@
-import { ArrowLeft, Clock, DollarSign, FolderKanban } from 'lucide-react'
-import { Link, useParams } from 'react-router-dom'
+import { ArrowLeft, Clock, DollarSign, FolderKanban, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { AppShell } from '../../../components/layout/AppShell'
+import { Button } from '../../../components/ui/Button'
 import { Card, CardBody, CardHeader } from '../../../components/ui/Card'
 import { Pill } from '../../../components/ui/Pill'
 import { useUserAssignments } from '../projects/membersQueries'
 import type { UserStatus } from '../../../types/profile'
+import { DeleteUserModal } from './DeleteUserModal'
 import {
   useUpdateUserRole,
   useUpdateUserStatus,
@@ -13,10 +16,12 @@ import {
 
 export function UserDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const { data: user, isLoading, error } = useUser(id)
   const { data: assignments = [] } = useUserAssignments(id)
   const updateStatus = useUpdateUserStatus()
   const updateRole = useUpdateUserRole()
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   const activeAssignments = assignments.filter((a) => a.assignment.is_current)
 
@@ -259,8 +264,33 @@ export function UserDetailPage() {
               </Row>
             </CardBody>
           </Card>
+
+          <Card className="border-red/30">
+            <CardHeader
+              title="Zona de peligro"
+              description="Eliminar el usuario es permanente y no se puede deshacer."
+            />
+            <CardBody>
+              <Button
+                variant="danger"
+                size="md"
+                fullWidth
+                leftIcon={<Trash2 size={14} />}
+                onClick={() => setDeleteOpen(true)}
+              >
+                Eliminar usuario
+              </Button>
+            </CardBody>
+          </Card>
         </div>
       </div>
+
+      <DeleteUserModal
+        open={deleteOpen}
+        user={user}
+        onClose={() => setDeleteOpen(false)}
+        onDeleted={() => navigate('/admin/users')}
+      />
     </AppShell>
   )
 }
