@@ -173,7 +173,11 @@ Deno.serve(async (req) => {
   // Render PDF
   let pdfBytes: Uint8Array
   try {
-    pdfBytes = await renderInvoicePdf(invoice, profile, billing)
+    pdfBytes = await renderInvoicePdf(
+      sanitizeDeep(invoice),
+      sanitizeDeep(profile),
+      sanitizeDeep(billing),
+    )
   } catch (e) {
     return jsonResponse(
       { error: e instanceof Error ? e.message : 'Render error' },
@@ -726,6 +730,66 @@ function drawRightAlignedText(
 
 function truncate(text: string, max: number) {
   return text.length > max ? text.slice(0, max - 1) + '…' : text
+}
+
+// The standard fonts only support WinAnsi (cp1252). Any character outside it
+// (arrows, emojis, math symbols…) makes pdf-lib throw, so user text must be
+// sanitized before drawing: known symbols get an ASCII equivalent and the
+// rest are dropped.
+const WINANSI_EXTRAS = new Set([
+  0x20ac, 0x201a, 0x0192, 0x201e, 0x2026, 0x2020, 0x2021, 0x02c6, 0x2030,
+  0x0160, 0x2039, 0x0152, 0x017d, 0x2018, 0x2019, 0x201c, 0x201d, 0x2022,
+  0x2013, 0x2014, 0x02dc, 0x2122, 0x0161, 0x203a, 0x0153, 0x017e, 0x0178,
+])
+
+const CHAR_FALLBACKS: Record<string, string> = {
+  '→': '->',
+  '←': '<-',
+  '↔': '<->',
+  '⇒': '=>',
+  '⇐': '<=',
+  '−': '-',
+  '≥': '>=',
+  '≤': '<=',
+  '≠': '!=',
+  '≈': '~',
+  '∞': 'inf',
+  '✓': 'v',
+  '✔': 'v',
+  '★': '*',
+  '☆': '*',
+}
+
+function sanitizeWinAnsi(text: string): string {
+  let out = ''
+  for (const ch of text) {
+    const cp = ch.codePointAt(0) ?? 0
+    if (
+      cp === 0x0a ||
+      (cp >= 0x20 && cp <= 0x7e) ||
+      (cp >= 0xa0 && cp <= 0xff) ||
+      WINANSI_EXTRAS.has(cp)
+    ) {
+      out += ch
+    } else if (CHAR_FALLBACKS[ch]) {
+      out += CHAR_FALLBACKS[ch]
+    }
+  }
+  return out
+}
+
+// Sanitizes every string in a plain data object (invoice, profile, billing).
+function sanitizeDeep<T>(value: T): T {
+  if (typeof value === 'string') return sanitizeWinAnsi(value) as unknown as T
+  if (Array.isArray(value)) {
+    return value.map((v) => sanitizeDeep(v)) as unknown as T
+  }
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(value)) out[k] = sanitizeDeep(v)
+    return out as unknown as T
+  }
+  return value
 }
 
 function wrapText(

@@ -131,10 +131,17 @@ Deno.serve(async (req) => {
     .select('full_name, email, user_code')
     .eq('id', targetUserId)
     .single()
-  const profile = (profileRaw as ProfileData) ?? {
+  const profileData = (profileRaw as ProfileData) ?? {
     full_name: null,
     email: '',
     user_code: null,
+  }
+  const profile: ProfileData = {
+    ...profileData,
+    full_name: profileData.full_name
+      ? sanitizeWinAnsi(profileData.full_name)
+      : null,
+    email: sanitizeWinAnsi(profileData.email),
   }
 
   // All tasks in the period, with their project
@@ -151,7 +158,15 @@ Deno.serve(async (req) => {
   if (tasksErr) {
     return jsonResponse({ error: tasksErr.message }, 500)
   }
-  const tasks = (tasksRaw ?? []) as unknown as TaskRow[]
+  const tasks = ((tasksRaw ?? []) as unknown as TaskRow[]).map((t) => ({
+    ...t,
+    name: sanitizeWinAnsi(t.name),
+    description: t.description ? sanitizeWinAnsi(t.description) : null,
+    observations: t.observations ? sanitizeWinAnsi(t.observations) : null,
+    project: t.project
+      ? { ...t.project, name: sanitizeWinAnsi(t.project.name) }
+      : null,
+  }))
 
   // Group by project (sorted by project name; tasks already date-ordered)
   const groupsMap = new Map<string, ProjectGroup>()
@@ -529,6 +544,52 @@ async function renderTasksReportPdf(
 // =============================================================================
 // Helpers
 // =============================================================================
+
+// The standard fonts only support WinAnsi (cp1252). Any character outside it
+// (arrows, emojis, math symbols…) makes pdf-lib throw, so user text must be
+// sanitized before drawing: known symbols get an ASCII equivalent and the
+// rest are dropped.
+const WINANSI_EXTRAS = new Set([
+  0x20ac, 0x201a, 0x0192, 0x201e, 0x2026, 0x2020, 0x2021, 0x02c6, 0x2030,
+  0x0160, 0x2039, 0x0152, 0x017d, 0x2018, 0x2019, 0x201c, 0x201d, 0x2022,
+  0x2013, 0x2014, 0x02dc, 0x2122, 0x0161, 0x203a, 0x0153, 0x017e, 0x0178,
+])
+
+const CHAR_FALLBACKS: Record<string, string> = {
+  '→': '->',
+  '←': '<-',
+  '↔': '<->',
+  '⇒': '=>',
+  '⇐': '<=',
+  '−': '-',
+  '≥': '>=',
+  '≤': '<=',
+  '≠': '!=',
+  '≈': '~',
+  '∞': 'inf',
+  '✓': 'v',
+  '✔': 'v',
+  '★': '*',
+  '☆': '*',
+}
+
+function sanitizeWinAnsi(text: string): string {
+  let out = ''
+  for (const ch of text) {
+    const cp = ch.codePointAt(0) ?? 0
+    if (
+      cp === 0x0a ||
+      (cp >= 0x20 && cp <= 0x7e) ||
+      (cp >= 0xa0 && cp <= 0xff) ||
+      WINANSI_EXTRAS.has(cp)
+    ) {
+      out += ch
+    } else if (CHAR_FALLBACKS[ch]) {
+      out += CHAR_FALLBACKS[ch]
+    }
+  }
+  return out
+}
 
 function drawLabelValue(
   page: PDFPage,
